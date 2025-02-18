@@ -1,0 +1,14 @@
+-i https://pypi.org/simple
+bs4
+jupyter
+pandas
+pendulum
+prefect
+prefect-github
+requests
+sqlalchemy
+selenium
+pymysql
+langchain
+langchain-community
+openai
