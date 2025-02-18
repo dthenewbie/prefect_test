@@ -1,0 +1,55 @@
+# Refer to https://github.com/anna-geller/prefect-cloud-gcp/blob/main/.github/actions/deploy-flows/action.yml
+name: 'Deploy flows'
+
+description: 'Deploy flows to Prefect Cloud and Google Cloud Run'
+inputs:
+  prefect_api_key:
+    description: 'Prefect Cloud API key'
+    required: false
+    default: ""
+  prefect_api_url:
+    description: 'Prefect Cloud API URL'
+    required: true
+  flow_python_path:
+    description: 'Prefect flow python path e.g. src/flows/sample/hello_world_flow.py'
+    required: true
+  python_version:
+    description: 'Python version'
+    required: false
+    default: "3.12"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "${{ inputs.python_version }}"
+
+    - name: Set Python path
+      run: echo "PYTHONPATH=${{ github.workspace }}/src" >> $GITHUB_ENV
+      shell: bash
+
+    # Refer to https://oldmo860617.medium.com/%E6%B7%BA%E8%AB%87-github-actions-workflows-%E7%9A%84-cache-%E6%A9%9F%E5%88%B6-f63db6f7929a
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      id: cache
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+    - name: Install pip dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pip install -r requirements.txt
+      shell: bash
+
+    - id: login-prefect
+      run: |
+        prefect config set PREFECT_API_KEY=${{ inputs.prefect_api_key }}
+        prefect config set PREFECT_API_URL=${{ inputs.prefect_api_url }}
+        prefect config set PREFECT_LOGGING_LOG_PRINTS=True
+      shell: bash
+
+    - run: |
+        python ${{ inputs.flow_python_path }}
+      shell: bash
