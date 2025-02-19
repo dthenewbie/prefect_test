@@ -14,15 +14,21 @@ from langchain.schema import SystemMessage, HumanMessage
 from langchain_community.callbacks import get_openai_callback
 from dotenv import load_dotenv
 
-load_dotenv()
+
 
 slack_webhook_block = SlackWebhook.load("flowcheck")
 # ----- GCP Secret Manager ----- #
-def access_secret_version(project_id, secret_id, version_id):
+# Function call to get api key
+@task
+def access_secret_version(project_id='gcppytest-447615', 
+                          secret_id='openai_api_key', 
+                          version_id='2') ->str:
+    
     """
     Access the payload for the given secret version if one exists. The version
     can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
     """
+    load_dotenv()
     try:
         # Create the Secret Manager client.
         client = secretmanager.SecretManagerServiceClient()
@@ -34,13 +40,15 @@ def access_secret_version(project_id, secret_id, version_id):
         response = client.access_secret_version(request={"name": name})
         # Print the secret payload.
         # snippet is showing how to access the secret material.
-        payload = response.payload.data.decode("UTF-8")
+        openai_api_key = response.payload.data.decode("UTF-8")
+
+        return openai_api_key
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【access_secret_version】 failed: {e}")
-    return payload
+        return None
 
-# Function call to get api key    
-openai_api_key = access_secret_version('gcppytest-447615', 'openai_api_key','2')
+    
+
 
 # ----- 日誌設定 ----- #
 logging.basicConfig(
@@ -75,7 +83,7 @@ def clean_content(text) -> str:
 
 # ----- OpenAI 提取模組 ----- #
 class FraudContentExtractor:
-    def __init__(self, model="gpt-4o-mini", response_format="json_object"):
+    def __init__(self, model="gpt-4o-mini", response_format="json_object", openai_api_key=None):
         """
         初始化 FraudContentExtractor 類別。
 
@@ -371,12 +379,12 @@ def Extract_from_Fraud_case():
     db.close()
     return cases
 @task
-def openai_trait_extractor(cases: tuple):
+def openai_trait_extractor(cases: tuple, open_api_key: str):
     if len(cases) == 0 :
         print("No unprocessed cases found.")
         # logging.info("No unprocessed cases found.")
         return [], [], [], []
-    extractor = FraudContentExtractor()
+    extractor = FraudContentExtractor(openai_api_key=open_api_key)
     transformed_data = []
     fraud_classifications = []
     case_updates = []
@@ -452,13 +460,14 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
 def trait_extractor_flow():
     fraud_success_input = 0
     non_fraud_success_update = 0
+    open_api_key = access_secret_version()
     while True:
         try:
             cases = Extract_from_Fraud_case()
             if len(cases) == 0:
                 print("No unprocessed cases found.")
                 break
-            transformed_data, fraud_classifications, case_updates, non_fraud_cases = openai_trait_extractor(cases)
+            transformed_data, fraud_classifications, case_updates, non_fraud_cases = openai_trait_extractor(cases,open_api_key)
             fraud_count, non_fraud_count = load_to_Anti_Fraud(transformed_data, 
                                                               fraud_classifications, 
                                                               case_updates, 
