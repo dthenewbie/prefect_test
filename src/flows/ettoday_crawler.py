@@ -101,8 +101,8 @@ def ETtoday_news_scraper_pipeline(pages: int =20):
         print(f"| ERROR   | flow 【ETtoday_crawler】 failed: {e}")
 
 if __name__ == "__main__":
-    from prefect_github import GitHubRepository
-    ETtoday_news_scraper_pipeline()
+
+    # ETtoday_news_scraper_pipeline()
     
     # # temporary local server of worker
     # ETtoday_news_scraper_pipeline.serve(
@@ -114,3 +114,17 @@ if __name__ == "__main__":
     #     # interval=60,  # Like crontab, "* * * * *"
     #     cron="*/5 * * * *",
     # )
+
+    from prefect_github import GitHubRepository
+    
+    ETtoday_news_scraper_pipeline.from_source(
+    source=GitHubRepository.load("antifraud"),
+    entrypoint="src/flows/ettoday_crawler.py:ETtoday_news_scraper_pipeline",
+    ).deploy(
+        name="ETtoday_crawler_deployment",
+        tags=["web crawler", "ETtoday", "case processing"],
+        work_pool_name="antifraud",
+        job_variables=dict(pull_policy="Never"),
+        parameters=dict(pages=int(20)),
+        cron="0 14 * * *"
+    )

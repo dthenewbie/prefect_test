@@ -480,8 +480,8 @@ def trait_extractor_flow():
     slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{fraud_success_input}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
 
 if __name__ == "__main__":
-    from prefect_github import GitHubRepository
-    trait_extractor_flow()
+    
+    # trait_extractor_flow()
 
     # # temporary local server of worker
     # trait_extractor_flow.serve(
@@ -493,3 +493,16 @@ if __name__ == "__main__":
     #     # interval=60,  # Like crontab, "* * * * *"
     #     cron="* 18 * * *",
     # )
+    from prefect_github import GitHubRepository
+
+    trait_extractor_flow.from_source(
+    source=GitHubRepository.load("antifraud"),
+    entrypoint="src/flows/Fraud_trait_extractor.py:trait_extractor_flow",
+    ).deploy(
+        name="Fraud_case_trait_extractor",
+        tags=["extractor", "Fraud_case", "Fraud_classification"],
+        work_pool_name="antifraud",
+        job_variables=dict(pull_policy="Never"),
+        # parameters=dict(name="Marvin"),
+        cron="0 20 * * *"
+    )
