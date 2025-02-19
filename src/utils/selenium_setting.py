@@ -14,7 +14,7 @@ def setup_driver():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--enable-unsafe-swiftshader")
     driver = webdriver.Remote(
-        command_executor="http://host.docker.internal:14444/wd/hub",
+        command_executor="http://34.81.118.141:14444/wd/hub",
         options=chrome_options,
     )
     return driver
