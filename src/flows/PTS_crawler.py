@@ -84,17 +84,18 @@ def PTS_news_scraper_pipeline(pagenum: int = 20):
         print(f"| ERROR   | flow 【PTS_crawler】 failed: {e}")
 
 if __name__ == "__main__":
-    # # Instantiate the flow
-    # PTS_news_scraper_pipeline()
+    # Instantiate the flow
+    from prefect_github import GitHubRepository
+    PTS_news_scraper_pipeline()
 
 
-    # temporary local server of worker
-    PTS_news_scraper_pipeline.serve(
-        name="pts_news_crawler",  # Deployment name. It create a temporary deployment.
-        tags=["web crawler", "PTS", "case processing"],  # Filtering when searching on UI.
-        # parameters={
-        #     "goodbye": True
-        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-        # interval=60,  # Like crontab, "* * * * *"
-        cron="*/5 * * * *",
-    )
+    # # temporary local server of worker
+    # PTS_news_scraper_pipeline.serve(
+    #     name="pts_news_crawler",  # Deployment name. It create a temporary deployment.
+    #     tags=["web crawler", "PTS", "case processing"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="*/5 * * * *",
+    # )

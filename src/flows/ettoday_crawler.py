@@ -101,16 +101,16 @@ def ETtoday_news_scraper_pipeline(pages: int =20):
         print(f"| ERROR   | flow 【ETtoday_crawler】 failed: {e}")
 
 if __name__ == "__main__":
-
-    # ETtoday_news_scraper_pipeline()
+    from prefect_github import GitHubRepository
+    ETtoday_news_scraper_pipeline()
     
-    # temporary local server of worker
-    ETtoday_news_scraper_pipeline.serve(
-        name="ETtoday_crawler_deployment_test",  # Deployment name. It create a temporary deployment.
-        tags=["web crawler", "ETtoday", "case processing"],  # Filtering when searching on UI.
-        # parameters={
-        #     "goodbye": True
-        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-        # interval=60,  # Like crontab, "* * * * *"
-        cron="*/5 * * * *",
-    )
+    # # temporary local server of worker
+    # ETtoday_news_scraper_pipeline.serve(
+    #     name="ETtoday_crawler_deployment_test",  # Deployment name. It create a temporary deployment.
+    #     tags=["web crawler", "ETtoday", "case processing"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="*/5 * * * *",
+    # )

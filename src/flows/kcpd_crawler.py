@@ -95,17 +95,18 @@ def Kaohsiung_Police_Department_scraper_pipeline():
         print(f"| ERROR   | flow 【Kaohsiung_Police_Department_crawler】 failed: {e}")
 
 if __name__ == "__main__":
-    ##Instantiate the flow
-    # Kaohsiung_Police_Department_scraper_pipeline()
+    #Instantiate the flow
+    from prefect_github import GitHubRepository
+    Kaohsiung_Police_Department_scraper_pipeline()
 
 
-    # temporary local server of worker
-    Kaohsiung_Police_Department_scraper_pipeline.serve(
-        name="Kaohsiung_Police_Department_crawler",  # Deployment name. It create a temporary deployment.
-        tags=["web crawler", "Kaohsiung_Police_Department", "case processing"],  # Filtering when searching on UI.
-        # parameters={
-        #     "goodbye": True
-        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-        # interval=60,  # Like crontab, "* * * * *"
-        cron="*/5 * * * *",
-    )
+    # # temporary local server of worker
+    # Kaohsiung_Police_Department_scraper_pipeline.serve(
+    #     name="Kaohsiung_Police_Department_crawler",  # Deployment name. It create a temporary deployment.
+    #     tags=["web crawler", "Kaohsiung_Police_Department", "case processing"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="*/5 * * * *",
+    # )

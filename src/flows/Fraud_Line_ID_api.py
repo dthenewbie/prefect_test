@@ -51,7 +51,7 @@ def Fraud_Line_ID_api():
         slack_webhook_block.notify(f"| ERROR   | flow 【Fraud_Line_ID_api】 failed: {e}")
 
 if __name__ == "__main__":
-
+    from prefect_github import GitHubRepository
     Fraud_Line_ID_api()
     
     # # temporary local server of worker

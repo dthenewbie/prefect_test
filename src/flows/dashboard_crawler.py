@@ -147,20 +147,20 @@ def dashboard_scraper_pipeline(scroll_round: int = 20):
         slack_webhook_block.notify(f"| SUCCESS | flow 【165dashboard_crawler】 success.")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【165dashboard_crawler】 error: {e}")
-        print(f"| ERROR   | flow 【165dashboard_crawler】 error: {e}")
+        # print(f"| ERROR   | flow 【165dashboard_crawler】 error: {e}")
 
 if __name__ == "__main__":
-
-    # dashboard_scraper_pipeline()
-
     from prefect_github import GitHubRepository
+    dashboard_scraper_pipeline()
 
-    dashboard_scraper_pipeline.serve(
-        name="165dashboard_crawler_deployment_test",  # Deployment name. It create a temporary deployment.
-        tags=["web crawler", "165 dashboard", "case processing"],  # Filtering when searching on UI.
-        # parameters={
-        #     "goodbye": True
-        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-        # interval=60,  # Like crontab, "* * * * *"
-        cron="*/5 * * * *",
-    )
+    
+
+    # dashboard_scraper_pipeline.serve(
+    #     name="165dashboard_crawler_deployment_test",  # Deployment name. It create a temporary deployment.
+    #     tags=["web crawler", "165 dashboard", "case processing"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="*/5 * * * *",
+    # )

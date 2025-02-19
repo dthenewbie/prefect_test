@@ -469,17 +469,18 @@ def trait_extractor_flow():
             print(e)
             slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {e}")
     slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{fraud_success_input}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
-    
-if __name__ == "__main__":
-    # trait_extractor_flow()
 
-    # temporary local server of worker
-    trait_extractor_flow.serve(
-        name="Fraud_case_trait_extractor",  # Deployment name. It create a temporary deployment.
-        tags=["extractor", "Fraud_case", "Fraud_classification"],  # Filtering when searching on UI.
-        # parameters={
-        #     "goodbye": True
-        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-        # interval=60,  # Like crontab, "* * * * *"
-        cron="* 18 * * *",
-    )
+if __name__ == "__main__":
+    from prefect_github import GitHubRepository
+    trait_extractor_flow()
+
+    # # temporary local server of worker
+    # trait_extractor_flow.serve(
+    #     name="Fraud_case_trait_extractor",  # Deployment name. It create a temporary deployment.
+    #     tags=["extractor", "Fraud_case", "Fraud_classification"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="* 18 * * *",
+    # )

@@ -80,15 +80,16 @@ def CNA_news_scraper_pipeline():
 
 if __name__ == "__main__":
     # Instantiate the flow
-    # CNA_news_scraper_pipeline()
+    from prefect_github import GitHubRepository
+    CNA_news_scraper_pipeline()
 
     # temporary local server of worker
-    CNA_news_scraper_pipeline.serve(
-        name="CNA_Contents_Crawler_deployment_test",  # Deployment name. It create a temporary deployment.
-        tags=["web crawler", "CNA", "case processing"],  # Filtering when searching on UI.
-        # parameters={
-        #     "goodbye": True
-        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-        # interval=60,  # Like crontab, "* * * * *"
-        cron="*/5 * * * *",
-    )
+    # CNA_news_scraper_pipeline.serve(
+    #     name="CNA_Contents_Crawler_deployment_test",  # Deployment name. It create a temporary deployment.
+    #     tags=["web crawler", "CNA", "case processing"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="*/5 * * * *",
+    # )
