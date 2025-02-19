@@ -4,7 +4,7 @@ from flows.ntpd_crawler import New_Taipei_Police_Department_scraper_pipeline
 
 New_Taipei_Police_Department_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flow/ntpd_crawler.py:New_Taipei_Police_Department_scraper_pipeline",
+    entrypoint="src/flows/ntpd_crawler.py:New_Taipei_Police_Department_scraper_pipeline",
 ).deploy(
     name="New_Taipei_Police_Department_crawler_deployment",
     tags=["web crawler", "New_Taipei_Police_Department", "case processing"],

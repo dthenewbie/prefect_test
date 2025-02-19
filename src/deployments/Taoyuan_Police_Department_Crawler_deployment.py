@@ -4,7 +4,7 @@ from flows.Taoyuan_Police_Department_Crawler import Taoyuan_Police_Department_sc
 
 Taoyuan_Police_Department_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flow/Taoyuan_Police_Department_Crawler.py:Taoyuan_Police_Department_scraper_pipeline",
+    entrypoint="src/flows/Taoyuan_Police_Department_Crawler.py:Taoyuan_Police_Department_scraper_pipeline",
 ).deploy(
     name="Taoyuan_Police_Department_crawler_deployment",
     tags=["web crawler", "Taoyuan_Police_Department_Crawler", "case processing"],

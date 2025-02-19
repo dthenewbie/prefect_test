@@ -4,7 +4,7 @@ from flows.dashboard_crawler import dashboard_scraper_pipeline
 
 dashboard_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flow/dashboard_crawler.py:dashboard_scraper_pipeline",
+    entrypoint="src/flows/dashboard_crawler.py:dashboard_scraper_pipeline",
 ).deploy(
     name="165dashboard_crawler_deployment",
     tags=["web crawler", "165 dashboard", "case processing"],
