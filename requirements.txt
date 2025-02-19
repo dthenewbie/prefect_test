@@ -12,3 +12,4 @@ pymysql
 langchain
 langchain-community
 openai
+google-cloud-secret-manager

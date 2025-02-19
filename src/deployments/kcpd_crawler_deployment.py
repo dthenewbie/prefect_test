@@ -3,13 +3,13 @@ from flows.kcpd_crawler import Kaohsiung_Police_Department_scraper_pipeline
 
 
 Kaohsiung_Police_Department_scraper_pipeline.from_source(
-    source=GitHubRepository.load("github-prefect-demo"),
+    source=GitHubRepository.load("antifraud"),
     entrypoint="src/flow/kcpd_crawler.py:Kaohsiung_Police_Department_scraper_pipeline",
 ).deploy(
     name="Kaohsiung_Police_Department_crawler_deployment",
     tags=["web crawler", "Kaohsiung_Police_Department", "case processing"],
-    work_pool_name="test-docker",
+    work_pool_name="antifraud",
     job_variables=dict(pull_policy="Never"),
     # parameters=dict(name="Marvin"),
-    cron="*/5 * * * *"
+    cron="0 9 * * 3"
 )

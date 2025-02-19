@@ -1,3 +1,5 @@
+from google.cloud import secretmanager
+from google.oauth2 import service_account
 import json
 import pandas as pd
 import pymysql
@@ -15,10 +17,33 @@ from dotenv import load_dotenv
 load_dotenv()
 
 slack_webhook_block = SlackWebhook.load("flowcheck")
+# ----- GCP Secret Manager ----- #
+def access_secret_version(project_id, secret_id, version_id):
+    """
+    Access the payload for the given secret version if one exists. The version
+    can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
+    """
+    # Create the Secret Manager client.
+    client = secretmanager.SecretManagerServiceClient()
+
+    # Build the resource name of the secret version.
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+
+    # Access the secret version.
+    response = client.access_secret_version(request={"name": name})
+    # Print the secret payload.
+    # snippet is showing how to access the secret material.
+    payload = response.payload.data.decode("UTF-8")
+    print("Plaintext: {}".format(payload))
+
+    return payload
+
+# Function call to get api key    
+openai_api_key = access_secret_version('gcppytest-447615', 'openai_api_key','2')
 
 # ----- 日誌設定 ----- #
 logging.basicConfig(
-    filename='etl_process2025-02-15.log',
+    filename='./etl_process2025-02-15.log',
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
@@ -47,6 +72,7 @@ def clean_content(text) -> str:
     cleaned_text = re.sub(r'\n+', '', cleaned_text).strip()
     return cleaned_text
 
+# ----- OpenAI 提取模組 ----- #
 class FraudContentExtractor:
     def __init__(self, model="gpt-4o-mini", response_format="json_object"):
         """
@@ -55,7 +81,11 @@ class FraudContentExtractor:
         :param model: 使用的 OpenAI 模型名稱。
         :param response_format: 返回的格式（預設為 json_object）。
         """
-        self.chat = ChatOpenAI(model=model, model_kwargs={"response_format": {"type": response_format}},timeout=20)
+        self.chat = ChatOpenAI(model=model,
+                               api_key=openai_api_key,
+                               model_kwargs={"response_format": {"type": response_format}},
+                               base_url="https://free.v36.cm/v1/",
+                               timeout=20)
         self.system_message = SystemMessage(
             content="""
             You are tasked with extracting specific features from news articles related to fraud cases.
@@ -69,7 +99,7 @@ class FraudContentExtractor:
             - If the text mentions a **district (區) or township (鄉、鎮、市)**, map it to the correct **直轄縣市**.
             - Example: **"板橋區"** → **"新北市"**
             - Example: **"中壢區"** → **"桃園市"**
-            - If the **specific county or city cannot be determined**, return the **country name** (e.g., `"台灣"`, `"日本"`, `"韓國"`).  
+            - If the **specific county or city cannot be determined**, return the **country name** (e.g., `"臺灣"`, `"日本"`, `"韓國"`).  
             - If no location information is available, return **None** (not `"None"` or `""`).
 
             2. **Platform (詐騙管道)**: *type: string or None*  
@@ -191,16 +221,16 @@ class FraudContentExtractor:
                     json_object = json.loads(cleaned_response)
                     # 清理 "None" 或 ""，確保回傳 Python None
                     json_object = clean_none_values(json_object)
-                    logging.info(f"Total tokens used in this batch: {cb}")
+                    # logging.info(f"Total tokens used in this batch: {cb}")
                 return json_object
             # except json.decoder.JSONDecodeError:
             except Exception as e:
                 print(f"Error parsing JSON response: {e}")
-                logging.error(f"Error parsing JSON response: {e}")
+                # logging.error(f"Error parsing JSON response: {e}")
                 if attempt < retries - 1:
                     time.sleep(1)  # 短暫等待後重試
                     print(f"{case_id} Retrying extraction {attempt + 1}/{retries}...")
-                    logging.info(f"{case_id} Retrying extraction {attempt + 1}/{retries}...")
+                    # logging.info(f"{case_id} Retrying extraction {attempt + 1}/{retries}...")
                     continue
             # 如果解析失敗，返回原始內容
             return {"error": "Failed to parse JSON response.", "raw_response": response.content}
@@ -215,11 +245,11 @@ class MySQLHandler:
             )
             self.cursor = self.conn.cursor()
             print("Database connection established successfully.")
-            logging.info("Database connection established successfully.")
+            # logging.info("Database connection established successfully.")
         except pymysql.MySQLError as e:
             slack_webhook_block.notify(f"| CRITICAL| flow 【trait_extractor】 Database connection failed: {e}")
             print(f"Database connection failed: {e}")
-            logging.critical(f"Database connection failed: {e}")
+            # logging.critical(f"Database connection failed: {e}")
             raise
 
     def fetch_unprocessed_cases(self) -> tuple:
@@ -228,9 +258,8 @@ class MySQLHandler:
             return self.cursor.fetchall()
         except pymysql.MySQLError as e:
             print(f"Error fetching data: {e}")
-            logging.error(f"Error fetching data: {e}")
+            # logging.error(f"Error fetching data: {e}")
             return []
-        
 
 
     def batch_insert_fraud_cases(self, fraud_cases) -> list:
@@ -249,7 +278,7 @@ class MySQLHandler:
                 success_cases.append(case[0])  # 記錄成功插入的 Case_ID
             except pymysql.MySQLError as e:
                 print(f"Error inserting case {case[0]}: {e}")
-                logging.error(f"Error inserting case {case[0]}: {e}")
+                # logging.error(f"Error inserting case {case[0]}: {e}")
         return success_cases
 
     def batch_insert_fraud_classifications(self, fraud_classifications, valid_case_ids) -> set:
@@ -265,7 +294,7 @@ class MySQLHandler:
                     success_cases.add(case_id)
                 except pymysql.MySQLError as e:
                     print(f"Error inserting fraud classifications for case {case_id}: {e}")
-                    logging.error(f"Error inserting fraud classifications for case {case_id}: {e}")
+                    # logging.error(f"Error inserting fraud classifications for case {case_id}: {e}")
         return success_cases
     
     def batch_update_non_fraud_cases(self, updates):
@@ -278,14 +307,19 @@ class MySQLHandler:
                 self.cursor.execute(update_query, (update,))
             except pymysql.MySQLError as e:
                 print(f"Error updating non-fraud case {update}: {e}")
-                logging.error(f"Error updating non-fraud case {update}: {e}")
+                # logging.error(f"Error updating non-fraud case {update}: {e}")
 
     def batch_update_case_processing(self, updates, valid_case_ids: set) -> list:
         """
         更新詐騙文章的 Case_processing 表中的 Status 和 Is_Fraud 欄位。
         """
         success_inputs = []
-        update_query = "UPDATE Case_processing SET Status = 1, Is_Fraud = %s WHERE ID = %s"
+        update_query = """
+                        UPDATE Case_processing 
+                        SET Status = 1, 
+                            Is_Fraud = %s 
+                        WHERE ID = %s;
+                        """
         for update in updates:
             if update[1] in valid_case_ids:
                 try:
@@ -293,7 +327,7 @@ class MySQLHandler:
                     success_inputs.append(update[1])
                 except pymysql.MySQLError as e:
                     print(f"Error updating case processing: {e}")
-                    logging.error(f"Error updating case processing: {e}")
+                    # logging.error(f"Error updating case processing: {e}")
         return len(success_inputs)
 
     def commit(self):
@@ -303,10 +337,10 @@ class MySQLHandler:
         try:
             self.conn.commit()
             print("Database changes committed successfully.")
-            logging.info("Database changes committed successfully.")
+            # logging.info("Database changes committed successfully.")
         except pymysql.MySQLError as e:
             print(f"Error during commit: {e}")
-            logging.error(f"Error during commit: {e}")
+            # logging.error(f"Error during commit: {e}")
 
     def close(self):
         """
@@ -315,14 +349,10 @@ class MySQLHandler:
         self.cursor.close()
         self.conn.close()
         print("Database connection closed.")
-        logging.info("Database connection closed.")
+        # logging.info("Database connection closed.")
 
 
-# # ----- ETL 主流程 ----- #
-# def main():
-#     for _ in range(300):
-#         try:
-            
+
             
 @task
 def Extract_from_Fraud_case():
@@ -331,16 +361,16 @@ def Extract_from_Fraud_case():
                     user='root', 
                     password='password', 
                     database='Anti_Fraud')
-    cases = db.fetch_unprocessed_cases()[:20]
+    cases = db.fetch_unprocessed_cases()[:20] # 取前20筆
     print(f"Fetched {len(cases)} unprocessed cases.")
-    logging.info(f"Fetched {len(cases)} unprocessed cases.")
+    # logging.info(f"Fetched {len(cases)} unprocessed cases.")
     db.close()
     return cases
 @task
 def openai_trait_extractor(cases: tuple):
     if len(cases) == 0 :
         print("No unprocessed cases found.")
-        logging.info("No unprocessed cases found.")
+        # logging.info("No unprocessed cases found.")
         return [], [], [], []
     extractor = FraudContentExtractor()
     transformed_data = []
@@ -383,7 +413,7 @@ def openai_trait_extractor(cases: tuple):
                     case_updates.append((1, case_id))
         except Exception as e:
             print(f"skipping case {case_id} due to error: {e}") 
-            logging.error(f"skipping case {case_id} due to error: {e}")
+            # logging.error(f"skipping case {case_id} due to error: {e}")
     return transformed_data, fraud_classifications, case_updates, non_fraud_cases
 @task
 def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, non_fraud_cases):
@@ -401,32 +431,39 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
         success_inputs = db.batch_update_case_processing(case_updates, valid_classification_ids)
         db.commit()
         print(f"fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
-        logging.info(f"fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
+        # slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
+        # logging.info(f"fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
 
     except Exception as e:
-        logging.critical(f"ETL process failed: {e}")
+        print(f"ETL process failed: {e}")
+        # logging.critical(f"ETL process failed: {e}")
                 
     finally:
         db.close()
 @flow(name = "trait_extractor")
 def trait_extractor_flow():
-    try:
-        cases = Extract_from_Fraud_case()
-        transformed_data, fraud_classifications, case_updates, non_fraud_cases = openai_trait_extractor(cases)
-        load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, non_fraud_cases)
-    except Exception as e:
-        slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {e}")
+    while True:
+        try:
+            cases = Extract_from_Fraud_case()
+            if len(cases) == 0:
+                print("No unprocessed cases found.")
+                break
+            transformed_data, fraud_classifications, case_updates, non_fraud_cases = openai_trait_extractor(cases)
+            load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, non_fraud_cases)
+        except Exception as e:
+            print(e)
+            # slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {e}")
 
 if __name__ == "__main__":
-    trait_extractor_flow()
+    # trait_extractor_flow()
 
     # temporary local server of worker
-    # trait_extractor_flow.serve(
-    #     name="Fraud_case_trait_extractor",  # Deployment name. It create a temporary deployment.
-    #     tags=["extractor", "Fraud_case", "Fraud_classification"],  # Filtering when searching on UI.
-    #     # parameters={
-    #     #     "goodbye": True
-    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-    #     # interval=60,  # Like crontab, "* * * * *"
-    #     cron="* 18 * * *",
-    # )
+    trait_extractor_flow.serve(
+        name="Fraud_case_trait_extractor",  # Deployment name. It create a temporary deployment.
+        tags=["extractor", "Fraud_case", "Fraud_classification"],  # Filtering when searching on UI.
+        # parameters={
+        #     "goodbye": True
+        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+        # interval=60,  # Like crontab, "* * * * *"
+        cron="* 18 * * *",
+    )

@@ -40,12 +40,12 @@
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/root/.gitconfig_mounted,type=bind,consistency=cached"
   ],
   "remoteEnv": {
-    "PYTHONPATH": "/workspaces/prefect/src"
+    "PYTHONPATH": "/workspaces/prefect_test/src"
   },
   "postCreateCommand": "./.devcontainer/postCreateCommand.sh",
   "runArgs": [
     "--name",
-    "prefect-project"
+    "prefect-project-demo"
     // "--add-host=host.docker.internal:host-gateway"
   ]
 }

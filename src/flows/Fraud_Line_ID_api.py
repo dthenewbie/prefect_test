@@ -52,15 +52,15 @@ def Fraud_Line_ID_api():
 
 if __name__ == "__main__":
 
-    # Fraud_Line_ID_api()
+    Fraud_Line_ID_api()
     
-    # temporary local server of worker
-    Fraud_Line_ID_api.serve(
-        name="Fraud_Line_ID_api",  # Deployment name. It create a temporary deployment.
-        tags=["API", "Open Data", "Fraud_Line_ID"],  # Filtering when searching on UI.
-        # parameters={
-        #     "goodbye": True
-        # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
-        # interval=60,  # Like crontab, "* * * * *"
-        cron="0 17 * * *",
-    )
+    # # temporary local server of worker
+    # Fraud_Line_ID_api.serve(
+    #     name="Fraud_Line_ID_api",  # Deployment name. It create a temporary deployment.
+    #     tags=["API", "Open Data", "Fraud_Line_ID"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="0 17 * * *",
+    # )
