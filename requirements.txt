@@ -13,3 +13,5 @@ langchain
 langchain-community
 openai
 google-cloud-secret-manager
+fake_useragent
+pyvirtualdisplay

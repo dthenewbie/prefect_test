@@ -434,10 +434,10 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
     if [transformed_data, fraud_classifications, case_updates, non_fraud_cases] == [[], [], [], []]:
         return slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 No data to process.")
     try:
-        db = MySQLHandler(host='host.docker.internal',
+        db = MySQLHandler(host='35.229.167.236',
                         port=3306, 
                         user='root', 
-                        password='password', 
+                        password='my-secret-pw', 
                         database='Anti_Fraud')
         non_fraud_success_update = db.batch_update_non_fraud_cases(non_fraud_cases)
         valid_case_ids = db.batch_insert_fraud_cases(transformed_data)
