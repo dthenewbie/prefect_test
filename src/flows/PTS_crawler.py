@@ -13,13 +13,11 @@ from prefect.blocks.notifications import SlackWebhook
 slack_webhook_block = SlackWebhook.load("flowcheck")
 
 @task
-def scrape_website() -> list:
+def scrape_website(pagenum: int = 20) -> list: # 測試限制爬取 i 頁 (記得修改)<共100頁>
     url_start = "https://news.pts.org.tw/tag/128?page="
     url_tail = "&type=new"
     seen_ID = set()
     all_data = []
-    pagenum = 1  # 測試限制爬取 i 頁 (記得修改)<共100頁>
-
     for page in range(1, pagenum + 1):
         url = url_start + str(page) + url_tail
         print(f"Scraping page {page}: {url}")
@@ -37,8 +35,8 @@ def scrape_website() -> list:
 def scrape_page(soup):
     data = []
     # 爬取所有目標資料
-    titles = soup.select('div.pt-2.pt-md-0 h2 a')[:5]
-    dates = soup.select('div.news-info time')[:5]
+    titles = soup.select('div.pt-2.pt-md-0 h2 a')
+    dates = soup.select('div.news-info time')
     for title, date in zip(titles, dates):
         create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -74,12 +72,13 @@ def data_transformation(result):
     return result_formated
 
 @flow(name="PTS_crawler")
-def PTS_news_scraper_pipeline():
+def PTS_news_scraper_pipeline(pagenum: int = 20):
     try:
         # Task dependencies
-        scraped_data = scrape_website()
+        scraped_data = scrape_website(pagenum)
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "PTS_crawler")
+        slack_webhook_block.notify(f"| INFO    | flow 【PTS_crawler】 finished")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【PTS_crawler】 failed: {e}")
         print(f"| ERROR   | flow 【PTS_crawler】 failed: {e}")

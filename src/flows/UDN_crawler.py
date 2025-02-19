@@ -36,7 +36,7 @@ def scrape_news_details(detail_url, retries=3) -> str:
     return content
 
 @task()
-def scrape_main_page():
+def scrape_main_page(scroll_round: int = 20):
     """爬取主頁內容，並進一步進入每個新聞的詳細頁。"""
     url = "https://udn.com/search/tagging/2/%E8%A9%90%E9%A8%99%E9%9B%86%E5%9C%98"
     driver = setup_driver()
@@ -48,7 +48,7 @@ def scrape_main_page():
 
     try:
         # while True:
-        for _ in range(1): # ----------單次爬蟲測試------------(記得修改)
+        for _ in range(scroll_round): # ----------下拉次數------------(外部參數)
             news_blocks = driver.find_elements(By.CSS_SELECTOR, "div.story-list__news")
             if not news_blocks:
                 print("No news blocks found.")
@@ -115,10 +115,10 @@ def data_transformation(result):
     return result_formated
 
 @flow(name="UDN_news_scraper_pipeline")
-def UDN_news_scraper_pipeline():
+def UDN_news_scraper_pipeline(scroll_round: int = 20):
     try:
         # Define task dependencies
-        scraped_data = scrape_main_page()
+        scraped_data = scrape_main_page(scroll_round)
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "UDN_news_scraper_pipeline")
     except Exception as e:

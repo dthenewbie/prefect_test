@@ -46,7 +46,7 @@ def Scrape_page():
     soup = BeautifulSoup(response.text, "html.parser")
     try:
         Url_list = soup.select("tbody > tr > td > p > a")
-        for url_ele in Url_list[:5]: #五筆爬蟲測試(記得修改)
+        for url_ele in Url_list: #爬蟲筆數(記得修改)
             try:
                 url_tail = url_ele["href"]
                 url = base_url + url_tail
@@ -89,6 +89,7 @@ def Kaohsiung_Police_Department_scraper_pipeline():
         result = Scrape_page()
         result_formated = data_transformation(result)
         save_to_caseprocessing(result_formated, "Kaohsiung_Police_Department_crawler")
+        slack_webhook_block.notify(f"| SUCCESS | flow 【Kaohsiung_Police_Department_crawler】 success.")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【Kaohsiung_Police_Department_crawler】 failed: {e}")
         print(f"| ERROR   | flow 【Kaohsiung_Police_Department_crawler】 failed: {e}")

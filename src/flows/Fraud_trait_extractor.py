@@ -23,19 +23,20 @@ def access_secret_version(project_id, secret_id, version_id):
     Access the payload for the given secret version if one exists. The version
     can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
     """
-    # Create the Secret Manager client.
-    client = secretmanager.SecretManagerServiceClient()
+    try:
+        # Create the Secret Manager client.
+        client = secretmanager.SecretManagerServiceClient()
 
-    # Build the resource name of the secret version.
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+        # Build the resource name of the secret version.
+        name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
 
-    # Access the secret version.
-    response = client.access_secret_version(request={"name": name})
-    # Print the secret payload.
-    # snippet is showing how to access the secret material.
-    payload = response.payload.data.decode("UTF-8")
-    print("Plaintext: {}".format(payload))
-
+        # Access the secret version.
+        response = client.access_secret_version(request={"name": name})
+        # Print the secret payload.
+        # snippet is showing how to access the secret material.
+        payload = response.payload.data.decode("UTF-8")
+    except Exception as e:
+        slack_webhook_block.notify(f"| ERROR   | flow 【access_secret_version】 failed: {e}")
     return payload
 
 # Function call to get api key    
@@ -67,9 +68,9 @@ def clean_json_response(response_text) -> str:
 
 def clean_content(text) -> str:
     # 去除特殊符號
-    cleaned_text = re.sub(r'[^a-zA-Z0-9\u4e00-\u9fff\s.,。，!?！？;:：、()（）【】「」《》“”‘’]', '', text)
+    cleaned_text = re.sub(r'[^a-zA-Z0-9\u4e00-\u9fff\s.,。，!?！？;:：、()（）【】「」《》\[\]“”‘’]', '', text)
     # 去除多餘空白行
-    cleaned_text = re.sub(r'\n+', '', cleaned_text).strip()
+    cleaned_text = re.sub(r'\n+', '\n', cleaned_text).strip()
     return cleaned_text
 
 # ----- OpenAI 提取模組 ----- #
@@ -301,13 +302,16 @@ class MySQLHandler:
         """
         更新非詐騙文章的 Case_processing 表中的 Status 欄位和 Is_Fraud 欄位。
         """
+        non_fraud_success_update = 0
         update_query = "UPDATE Case_processing SET Status = 1 WHERE ID = %s AND Is_Fraud = 0"
         for update in updates:
             try:
                 self.cursor.execute(update_query, (update,))
+                non_fraud_success_update += 1
             except pymysql.MySQLError as e:
                 print(f"Error updating non-fraud case {update}: {e}")
                 # logging.error(f"Error updating non-fraud case {update}: {e}")
+        return non_fraud_success_update
 
     def batch_update_case_processing(self, updates, valid_case_ids: set) -> list:
         """
@@ -383,34 +387,36 @@ def openai_trait_extractor(cases: tuple):
         try:
             extracted_data = extractor.process_content(case_id, content)
             print(extracted_data)
-            if 'error' not in extracted_data:
-                if extracted_data.get('Is_Fraud', 0) == 0:
-                    non_fraud_cases.append(case_id)
+            if 'error' in extracted_data:
+                slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {extracted_data['error']}")
+                break
+            if extracted_data.get('Is_Fraud', 0) == 0:
+                non_fraud_cases.append(case_id)
+            else:
+                fraud_case_data = (
+                    case_id or str(uuid.uuid4()), 
+                    # title,
+                    clean_content(title), 
+                    reported_date, 
+                    area if area else extracted_data.get('Area', None),
+                    extracted_data.get('Platform', None), 
+                    extracted_data.get('Victim_Gender', None),
+                    extracted_data.get('Victim_Age', None), 
+                    extracted_data.get('Victim_Career', None),
+                    extracted_data.get('Financial_Loss', None), 
+                    # content, 
+                    clean_content(content),
+                    url
+                )
+                transformed_data.append(fraud_case_data)
+                # if extracted_data.get('Fraud_type') is not List
+                if isinstance(extracted_data.get('Fraud_type', []), list):
+                    for fraud_type_id in extracted_data.get('Fraud_type', []):
+                        fraud_classifications.append((case_id, fraud_type_id))
                 else:
-                    fraud_case_data = (
-                        case_id or str(uuid.uuid4()), 
-                        # title,
-                        clean_content(title), 
-                        reported_date, 
-                        area if area else extracted_data.get('Area', None),
-                        extracted_data.get('Platform', None), 
-                        extracted_data.get('Victim_Gender', None),
-                        extracted_data.get('Victim_Age', None), 
-                        extracted_data.get('Victim_Career', None),
-                        extracted_data.get('Financial_Loss', None), 
-                        # content, 
-                        clean_content(content),
-                        url
-                    )
-                    transformed_data.append(fraud_case_data)
-                    # if extracted_data.get('Fraud_type') is not List
-                    if isinstance(extracted_data.get('Fraud_type', []), list):
-                        for fraud_type_id in extracted_data.get('Fraud_type', []):
-                            fraud_classifications.append((case_id, fraud_type_id))
-                    else:
-                        pass
-                    # Status = 1, Is_Fraud = 1
-                    case_updates.append((1, case_id))
+                    pass
+                # Status = 1, Is_Fraud = 1
+                case_updates.append((1, case_id))
         except Exception as e:
             print(f"skipping case {case_id} due to error: {e}") 
             # logging.error(f"skipping case {case_id} due to error: {e}")
@@ -425,16 +431,18 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
                         user='root', 
                         password='password', 
                         database='Anti_Fraud')
-        db.batch_update_non_fraud_cases(non_fraud_cases)
+        non_fraud_success_update = db.batch_update_non_fraud_cases(non_fraud_cases)
         valid_case_ids = db.batch_insert_fraud_cases(transformed_data)
         valid_classification_ids = db.batch_insert_fraud_classifications(fraud_classifications, valid_case_ids)
-        success_inputs = db.batch_update_case_processing(case_updates, valid_classification_ids)
+        fraud_success_inputs = db.batch_update_case_processing(case_updates, valid_classification_ids)
         db.commit()
-        print(f"fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
+        print(f"fraud:{fraud_success_inputs}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
+        return fraud_success_inputs, non_fraud_success_update
         # slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
         # logging.info(f"fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
 
     except Exception as e:
+        slack_webhook_block.notify(f"| CRITICAL| flow 【trait_extractor】 ETL process failed: {e}")
         print(f"ETL process failed: {e}")
         # logging.critical(f"ETL process failed: {e}")
                 
@@ -442,6 +450,8 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
         db.close()
 @flow(name = "trait_extractor")
 def trait_extractor_flow():
+    fraud_success_input = 0
+    non_fraud_success_update = 0
     while True:
         try:
             cases = Extract_from_Fraud_case()
@@ -449,11 +459,17 @@ def trait_extractor_flow():
                 print("No unprocessed cases found.")
                 break
             transformed_data, fraud_classifications, case_updates, non_fraud_cases = openai_trait_extractor(cases)
-            load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, non_fraud_cases)
+            fraud_count, non_fraud_count = load_to_Anti_Fraud(transformed_data, 
+                                                              fraud_classifications, 
+                                                              case_updates, 
+                                                              non_fraud_cases)
+            fraud_success_input += fraud_count
+            non_fraud_success_update += non_fraud_count
         except Exception as e:
             print(e)
-            # slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {e}")
-
+            slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {e}")
+    slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{fraud_success_input}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
+    
 if __name__ == "__main__":
     # trait_extractor_flow()
 

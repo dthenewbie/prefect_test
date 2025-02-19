@@ -14,12 +14,15 @@ from utils.request_check import request_with_retry
 slack_webhook_block = SlackWebhook.load("flowcheck")
 
 @task
-def scrape_website() -> list:
+def scrape_website(pages: int =20) -> list:
+        """
+        pages 為目標爬取頁數
+        """
         url_base = "https://www.ettoday.net/news_search/doSearch.php?keywords=%E8%A9%90%E9%A8%99&idx=1&page="
         all_data = []
         processed_data = set()
         # pages = 100
-        pages = 1 # 測試限制 1 頁(記得修改)
+        pages = 20 # 測試限制 1 頁(記得修改)
         for page in range(1, pages+1):  
             url = f"{url_base}{page}"
             print(f"Scraping page {page}: {url}")
@@ -87,11 +90,12 @@ def data_transformation(result):
     return result_formated
 
 @flow(name="ETtoday_crawler")
-def ETtoday_news_scraper_pipeline():
+def ETtoday_news_scraper_pipeline(pages: int =20):
     try:
-        scraped_data = scrape_website()
+        scraped_data = scrape_website(pages)
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "ETtoday_crawler")
+        slack_webhook_block.notify(f"| SUCCESS | flow 【ETtoday_crawler】 finished")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【ETtoday_crawler】 failed: {e}")
         print(f"| ERROR   | flow 【ETtoday_crawler】 failed: {e}")

@@ -62,7 +62,7 @@ def scam_info(url) -> list:
 @task
 def page_iter() -> list:
     all_data = []  # 用來存放所有頁面的數據
-    page = 1 #共有5頁(記得修改)
+    page = 5 #共有5頁(記得修改)
     for i in range(1, page+1):  # 抓取第 1 到第 5 頁
         url = f"https://www.typd.gov.tw/index.php?catid=551&cid=25&action=index&pg={i}#gsc.tab=0"
         print(f"正在抓取第 {i} 頁的數據...")
@@ -89,6 +89,7 @@ def Taoyuan_Police_Department_scraper_pipeline():
         result = page_iter()
         result_formated = data_transformation(result)
         save_to_caseprocessing(result_formated, "Taoyuan_Police_Department_crawler")
+        slack_webhook_block.notify(f"| INFO    | flow 【Taoyuan_Police_Department_crawler】 finished")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【Taoyuan_Police_Department_crawler】 failed: {e}")
         print(f"| ERROR   | flow 【Taoyuan_Police_Department_crawler】 failed: {e}")

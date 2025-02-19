@@ -14,7 +14,7 @@ from prefect.blocks.notifications import SlackWebhook
 slack_webhook_block = SlackWebhook.load("flowcheck")
 
 @task
-def scrape_website() -> list:
+def scrape_website(scroll_round:int) -> list:
     url = "https://165dashboard.tw/city-case-summary"  # 目標網址
     driver = setup_driver()
     driver.get(url)
@@ -32,8 +32,7 @@ def scrape_website() -> list:
         
         time.sleep(2)
         dropdown_values = [option.text for option in options[1:]]
-        # for value in dropdown_values[0]:
-        for value in dropdown_values[:5]: #------------單次爬蟲測試(記得修改)------------
+        for value in dropdown_values:
             print(f"正在爬取縣市：{value}")
             #選擇縣市
             WebDriverWait(driver, 10).until(
@@ -41,7 +40,7 @@ def scrape_website() -> list:
             ).click()
             time.sleep(5)
             #爬取內容
-            city_data = scrape_content(driver, value) 
+            city_data = scrape_content(driver, value, scroll_round) 
             all_data.extend(city_data)
 
             # 回到首頁
@@ -63,13 +62,13 @@ def scrape_website() -> list:
 
     return all_data
 
-def scrape_content(driver, area) -> list:
+def scrape_content(driver, area, scroll_round:int) -> list:
     data = []
     seen_uuid = set()  # 用於記錄已處理內容的哈希值
     last_card_count = 0  # 用於追蹤區塊數量變化
 
     # while True:
-    for _ in range(1): # ----------單次爬蟲測試------------(記得修改)
+    for _ in range(scroll_round): # ----------下拉次數------------(外部變數)
         # 抓取所有區塊
         cards = driver.find_elements(By.CSS_SELECTOR, 'div.summary-card.ng-star-inserted')
         new_cards = cards[last_card_count:]  # 只處理新加載的區塊
@@ -140,11 +139,12 @@ def data_transformation(result):
     
 # Define task dependencies
 @flow(name="165dashboard_crawler")
-def dashboard_scraper_pipeline():
+def dashboard_scraper_pipeline(scroll_round: int = 20):
     try:
-        scraped_data = scrape_website()
+        scraped_data = scrape_website(scroll_round)
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "165dashboard_crawler")
+        slack_webhook_block.notify(f"| SUCCESS | flow 【165dashboard_crawler】 success.")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【165dashboard_crawler】 error: {e}")
         print(f"| ERROR   | flow 【165dashboard_crawler】 error: {e}")

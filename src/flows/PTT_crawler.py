@@ -65,7 +65,7 @@ def get_article_content(base_url, article_url) -> dict:
         "Url": f"{base_url}{article_url}",
         "Area": None}
 @task
-def get_data_list():
+def get_data_list(pagenum: int = 20):
     """
     爬取所有頁面的文章內容
     """
@@ -76,7 +76,7 @@ def get_data_list():
     driver = setup_driver()
     try:
         # while True:
-        for _ in range(1): # ----------單次爬蟲測試------------(記得修改)
+        for _ in range(pagenum): # ----------爬蟲頁數------------(記得修改)
             soup = get_soup(driver, current_url)
             article_links = get_article_links(soup)
             for link in article_links:
@@ -118,12 +118,13 @@ def data_transformation(result):
     return result_formated
 
 @flow(name="PTT_scraper_pipeline")
-def PTT_scraper_pipeline():
+def PTT_scraper_pipeline(pagenum: int = 20):
     try:
         # Task dependencies
-        result = get_data_list()
+        result = get_data_list(pagenum)
         result_formated = data_transformation(result)
         save_to_caseprocessing(result_formated, "PTT_crawler")
+        slack_webhook_block.notify(f"| INFO    | flow 【PTT_crawler】 finished")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【PTT_crawler】 failed: {e}")
         print(f"| ERROR   | flow 【PTT_crawler】 failed: {e}")

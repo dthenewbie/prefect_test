@@ -88,6 +88,7 @@ def New_Taipei_Police_Department_scraper_pipeline():
         result = Scrape_page()
         result_formated = data_transformation(result)
         save_to_caseprocessing(result_formated, "New_Taipei_Police_Department_crawler")
+        slack_webhook_block.notify(f"| INFO    | flow 【New_Taipei_Police_Department_crawler】 finished")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【New_Taipei_Police_Department_crawler】 failed: {e}")
         print(f"| ERROR   | flow 【New_Taipei_Police_Department_crawler】 failed: {e}")

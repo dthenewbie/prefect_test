@@ -73,6 +73,7 @@ def CNA_news_scraper_pipeline():
         scraped_data = scrape_page()
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "CNA_Contents_Crawler")
+        slack_webhook_block.notify(f"| INFO    | flow 【CNA_contents_crawler】 finished")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【CNA_contents_crawler】 error: {e}")
         print(f"| ERROR   | flow 【CNA_contents_crawler】 error: {e}")
