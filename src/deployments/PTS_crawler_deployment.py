@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.PTS_crawler import PTS_news_scraper_pipeline
+from flows.PTS_crawler_flow import PTS_news_scraper_pipeline
 
 
 PTS_news_scraper_pipeline.from_source(

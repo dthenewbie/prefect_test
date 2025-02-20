@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.dashboard_crawler import dashboard_scraper_pipeline
+from flows.dashboard_crawler_flow import dashboard_scraper_pipeline
 
 
 dashboard_scraper_pipeline.from_source(

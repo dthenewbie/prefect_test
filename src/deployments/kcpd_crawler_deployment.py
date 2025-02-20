@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.kcpd_crawler import Kaohsiung_Police_Department_scraper_pipeline
+from flows.kcpd_crawler_flow import Kaohsiung_Police_Department_scraper_pipeline
 
 
 Kaohsiung_Police_Department_scraper_pipeline.from_source(

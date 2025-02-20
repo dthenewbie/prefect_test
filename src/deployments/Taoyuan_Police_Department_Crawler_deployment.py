@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.Taoyuan_Police_Department_Crawler import Taoyuan_Police_Department_scraper_pipeline
+from flows.Taoyuan_Police_Department_Crawler_flow import Taoyuan_Police_Department_scraper_pipeline
 
 
 Taoyuan_Police_Department_scraper_pipeline.from_source(

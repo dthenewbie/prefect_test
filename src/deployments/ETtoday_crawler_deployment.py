@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.ettoday_crawler import ETtoday_news_scraper_pipeline
+from flows.ettoday_crawler_flow import ETtoday_news_scraper_pipeline
 
 
 ETtoday_news_scraper_pipeline.from_source(

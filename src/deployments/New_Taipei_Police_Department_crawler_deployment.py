@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.ntpd_crawler import New_Taipei_Police_Department_scraper_pipeline
+from flows.ntpd_crawler_flow import New_Taipei_Police_Department_scraper_pipeline
 
 
 New_Taipei_Police_Department_scraper_pipeline.from_source(

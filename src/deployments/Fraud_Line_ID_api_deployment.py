@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.Fraud_Line_ID_api import Fraud_Line_ID_api
+from flows.Fraud_Line_ID_api_flow import Fraud_Line_ID_api
 
 Fraud_Line_ID_api.from_source(
     source=GitHubRepository.load("antifraud"),

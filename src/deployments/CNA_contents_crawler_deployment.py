@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.CNA_contents_crawler import CNA_news_scraper_pipeline
+from flows.CNA_contents_crawler_flow import CNA_news_scraper_pipeline
 
 
 CNA_news_scraper_pipeline.from_source(

@@ -1,5 +1,5 @@
 from prefect_github import GitHubRepository
-from flows.UDN_crawler import UDN_news_scraper_pipeline
+from flows.UDN_crawler_flow import UDN_news_scraper_pipeline
 
 
 UDN_news_scraper_pipeline.from_source(
