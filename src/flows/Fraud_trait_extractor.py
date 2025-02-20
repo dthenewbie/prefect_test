@@ -321,7 +321,7 @@ class MySQLHandler:
                 # logging.error(f"Error updating non-fraud case {update}: {e}")
         return non_fraud_success_update
 
-    def batch_update_case_processing(self, updates, valid_case_ids: set) -> list:
+    def batch_update_case_processing(self, updates, valid_case_ids: set) -> int:
         """
         更新詐騙文章的 Case_processing 表中的 Status 和 Is_Fraud 欄位。
         """
@@ -445,7 +445,7 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
         fraud_success_inputs = db.batch_update_case_processing(case_updates, valid_classification_ids)
         db.commit()
         print(f"fraud:{fraud_success_inputs}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
-        return fraud_success_inputs, non_fraud_success_update
+        
         # slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
         # logging.info(f"fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
 
@@ -456,12 +456,15 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
                 
     finally:
         db.close()
+        return fraud_success_inputs, non_fraud_success_update
+    
 @flow(name = "trait_extractor")
 def trait_extractor_flow():
     fraud_success_input = 0
     non_fraud_success_update = 0
     open_api_key = access_secret_version()
-    while True:
+    print(open_api_key)
+    for _ in range(1):
         try:
             cases = Extract_from_Fraud_case()
             if len(cases) == 0:
