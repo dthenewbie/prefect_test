@@ -311,7 +311,7 @@ class MySQLHandler:
         更新非詐騙文章的 Case_processing 表中的 Status 欄位和 Is_Fraud 欄位。
         """
         non_fraud_success_update = 0
-        update_query = "UPDATE Case_processing SET Status = 1 WHERE ID = %s AND Is_Fraud = 0"
+        update_query = "UPDATE Case_processing SET Status = 1, Is_Fraud = 0 WHERE ID = %s"
         for update in updates:
             try:
                 self.cursor.execute(update_query, (update,))
@@ -330,7 +330,7 @@ class MySQLHandler:
                         UPDATE Case_processing 
                         SET Status = 1, 
                             Is_Fraud = %s 
-                        WHERE ID = %s;
+                        WHERE ID = %s
                         """
         for update in updates:
             if update[1] in valid_case_ids:
