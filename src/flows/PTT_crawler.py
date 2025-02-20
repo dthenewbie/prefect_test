@@ -154,7 +154,7 @@ if __name__ == "__main__":
         name="PTT_crawler_deployment",
         tags=["web crawler", "PTT", "case processing"],
         work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        # job_variables=dict(pull_policy="Never"),
         parameters=dict(pagenum = int(20)),
         cron="0 8 * * *"
     )

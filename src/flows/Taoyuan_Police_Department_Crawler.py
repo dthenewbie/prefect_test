@@ -119,7 +119,7 @@ if __name__ == "__main__":
         name="Taoyuan_Police_Department_crawler_deployment",
         tags=["web crawler", "Taoyuan_Police_Department_Crawler", "case processing"],
         work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        # job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 10 * * 3"
     )

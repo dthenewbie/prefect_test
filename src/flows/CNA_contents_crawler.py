@@ -102,7 +102,7 @@ if __name__ == "__main__":
         name="CNA_Contents_Crawler_deployment",
         tags=["web crawler", "CNA", "case processing"],
         work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        # job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 12 * * *"
     )

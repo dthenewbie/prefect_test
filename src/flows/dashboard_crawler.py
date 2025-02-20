@@ -173,7 +173,7 @@ if __name__ == "__main__":
         name="165dashboard_crawler_deployment",
         tags=["web crawler", "165 dashboard", "case processing"],
         work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        # job_variables=dict(pull_policy="Never"),
         parameters=dict(scroll_round=int(20)),
         cron="0 13 * * *"
     )

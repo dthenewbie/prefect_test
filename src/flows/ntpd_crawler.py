@@ -118,7 +118,7 @@ if __name__ == "__main__":
         name="New_Taipei_Police_Department_crawler_deployment",
         tags=["web crawler", "New_Taipei_Police_Department", "case processing"],
         work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        # job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 11 * * 3",
     )

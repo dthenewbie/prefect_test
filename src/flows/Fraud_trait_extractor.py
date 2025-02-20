@@ -505,7 +505,7 @@ if __name__ == "__main__":
         name="Fraud_case_trait_extractor",
         tags=["extractor", "Fraud_case", "Fraud_classification"],
         work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        # job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 20 * * *"
     )

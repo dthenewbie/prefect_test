@@ -124,7 +124,7 @@ if __name__ == "__main__":
         name="ETtoday_crawler_deployment",
         tags=["web crawler", "ETtoday", "case processing"],
         work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        # job_variables=dict(pull_policy="Never"),
         parameters=dict(pages=int(20)),
         cron="0 14 * * *"
     )
