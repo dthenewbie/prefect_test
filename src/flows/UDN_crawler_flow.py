@@ -144,7 +144,7 @@ if __name__ == "__main__":
     from prefect_github import GitHubRepository
     UDN_news_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/UDN_crawler.py:UDN_news_scraper_pipeline",
+    entrypoint="src/flows/UDN_crawler_flow.py:UDN_news_scraper_pipeline",
     ).deploy(
         name="UDN_news_crawler_deployment",
         tags=["web crawler", "UDN", "case processing"],

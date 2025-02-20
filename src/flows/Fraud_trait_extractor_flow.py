@@ -94,7 +94,7 @@ class FraudContentExtractor:
         self.chat = ChatOpenAI(model=model,
                                api_key=openai_api_key,
                                model_kwargs={"response_format": {"type": response_format}},
-                               base_url="https://free.v36.cm/v1/",
+                            #    base_url="https://free.v36.cm/v1/",
                                timeout=20)
         self.system_message = SystemMessage(
             content="""
@@ -463,13 +463,12 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
         return fraud_success_inputs, non_fraud_success_update
     
 @flow(name = "trait_extractor")
-def trait_extractor_flow():
+def trait_extractor_flow(rounds: int = 100):
     slack_webhook_block = SlackWebhook.load("flowcheck")
     fraud_success_input = 0
     non_fraud_success_update = 0
     open_api_key = access_secret_version()
-    print(open_api_key)
-    for _ in range(1):
+    for _ in range(rounds):
         try:
             cases = Extract_from_Fraud_case()
             if len(cases) == 0:
@@ -489,7 +488,7 @@ def trait_extractor_flow():
 
 if __name__ == "__main__":
     
-    trait_extractor_flow()
+    # trait_extractor_flow()
 
     # # temporary local server of worker
     # trait_extractor_flow.serve(
@@ -501,16 +500,16 @@ if __name__ == "__main__":
     #     # interval=60,  # Like crontab, "* * * * *"
     #     cron="* 18 * * *",
     # )
-    # from prefect_github import GitHubRepository
+    from prefect_github import GitHubRepository
 
-    # trait_extractor_flow.from_source(
-    # source=GitHubRepository.load("antifraud"),
-    # entrypoint="src/flows/Fraud_trait_extractor.py:trait_extractor_flow",
-    # ).deploy(
-    #     name="Fraud_case_trait_extractor",
-    #     tags=["extractor", "Fraud_case", "Fraud_classification"],
-    #     work_pool_name="antifraud",
-    #     job_variables=dict(pull_policy="Never"),
-    #     # parameters=dict(name="Marvin"),
-    #     cron="0 20 * * *"
-    # )
+    trait_extractor_flow.from_source(
+    source=GitHubRepository.load("antifraud"),
+    entrypoint="src/flows/Fraud_trait_extractor_flow.py:trait_extractor_flow",
+    ).deploy(
+        name="Fraud_case_trait_extractor",
+        tags=["extractor", "Fraud_case", "Fraud_classification"],
+        work_pool_name="antifraud",
+        job_variables=dict(pull_policy="Never"),
+        parameters=dict(rounds= int(100)),
+        cron="0 20 * * *"
+    )

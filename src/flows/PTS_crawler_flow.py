@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     PTS_news_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/PTS_crawler.py:PTS_news_scraper_pipeline",
+    entrypoint="src/flows/PTS_crawler_flow.py:PTS_news_scraper_pipeline",
     ).deploy(
         name="pts_news_crawler_deployment",
         tags=["web crawler", "PTS", "case processing"],

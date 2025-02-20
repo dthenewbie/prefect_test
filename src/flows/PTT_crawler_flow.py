@@ -148,7 +148,7 @@ if __name__ == "__main__":
     from prefect_github import GitHubRepository
     PTT_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/PTT_crawler.py:PTT_scraper_pipeline",
+    entrypoint="src/flows/PTT_crawler_flow.py:PTT_scraper_pipeline",
     ).deploy(
         name="PTT_crawler_deployment",
         tags=["web crawler", "PTT", "case processing"],

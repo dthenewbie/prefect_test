@@ -113,7 +113,7 @@ if __name__ == "__main__":
     
     Taoyuan_Police_Department_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/Taoyuan_Police_Department_Crawler.py:Taoyuan_Police_Department_scraper_pipeline",
+    entrypoint="src/flows/Taoyuan_Police_Department_Crawler_flow.py:Taoyuan_Police_Department_scraper_pipeline",
     ).deploy(
         name="Taoyuan_Police_Department_crawler_deployment",
         tags=["web crawler", "Taoyuan_Police_Department_Crawler", "case processing"],
