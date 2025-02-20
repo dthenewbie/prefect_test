@@ -9,7 +9,7 @@ from utils.text_handler import clean_content
 from utils.request_check import request_with_retry
 
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
+
 
 
 
@@ -68,6 +68,7 @@ def data_transformation(result):
 
 @flow(name="CNA_contents_crawler")
 def CNA_news_scraper_pipeline():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Task dependencies
         scraped_data = scrape_page()
@@ -102,7 +103,7 @@ if __name__ == "__main__":
         name="CNA_Contents_Crawler_deployment",
         tags=["web crawler", "CNA", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 12 * * *"
     )

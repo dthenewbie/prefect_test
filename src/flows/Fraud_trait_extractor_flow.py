@@ -15,7 +15,7 @@ from langchain.schema import SystemMessage, HumanMessage
 from langchain_community.callbacks import get_openai_callback
 
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
+
 # ----- GCP Secret Manager ----- #
 # Function call to get api key
 @task
@@ -27,8 +27,9 @@ def access_secret_version(project_id='gcppytest-447615',
     Access the payload for the given secret version if one exists. The version
     can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
     """
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     gcp_credentials_block = GcpCredentials.load("darylcredential")
-    
+
     try:
         # Create the Secret Manager client.
         client = gcp_credentials_block.get_secret_manager_client()
@@ -248,6 +249,7 @@ class FraudContentExtractor:
 # ----- MySQL 資料處理模組 ----- #
 class MySQLHandler:
     def __init__(self, host, port, user, password, database):
+        slack_webhook_block = SlackWebhook.load("flowcheck")
         try:
             self.conn = pymysql.connect(
                 host=host, port=port, user=user, password=password, database=database
@@ -380,6 +382,7 @@ def Extract_from_Fraud_case():
     return cases
 @task
 def openai_trait_extractor(cases: tuple, open_api_key: str):
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     if len(cases) == 0 :
         print("No unprocessed cases found.")
         # logging.info("No unprocessed cases found.")
@@ -431,6 +434,7 @@ def openai_trait_extractor(cases: tuple, open_api_key: str):
     return transformed_data, fraud_classifications, case_updates, non_fraud_cases
 @task
 def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, non_fraud_cases):
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     if [transformed_data, fraud_classifications, case_updates, non_fraud_cases] == [[], [], [], []]:
         return slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 No data to process.")
     try:
@@ -460,6 +464,7 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
     
 @flow(name = "trait_extractor")
 def trait_extractor_flow():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     fraud_success_input = 0
     non_fraud_success_update = 0
     open_api_key = access_secret_version()
@@ -505,7 +510,7 @@ if __name__ == "__main__":
     #     name="Fraud_case_trait_extractor",
     #     tags=["extractor", "Fraud_case", "Fraud_classification"],
     #     work_pool_name="antifraud",
-    #     # job_variables=dict(pull_policy="Never"),
+    #     job_variables=dict(pull_policy="Never"),
     #     # parameters=dict(name="Marvin"),
     #     cron="0 20 * * *"
     # )

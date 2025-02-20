@@ -11,8 +11,6 @@ from utils.text_handler import clean_content
 from utils.request_check import request_with_retry
 from prefect.blocks.notifications import SlackWebhook
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
-
 
 def scam_info(url) -> list:
     """抓取單一頁面的所有標題、時間與文章連結"""
@@ -84,6 +82,7 @@ def data_transformation(result) -> list:
 
 @flow(name = "Taoyuan_Police_Department_crawler")
 def Taoyuan_Police_Department_scraper_pipeline():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:    
         # Task dependencies
         result = page_iter()
@@ -119,7 +118,7 @@ if __name__ == "__main__":
         name="Taoyuan_Police_Department_crawler_deployment",
         tags=["web crawler", "Taoyuan_Police_Department_Crawler", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 10 * * 3"
     )

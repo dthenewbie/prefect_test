@@ -3,7 +3,7 @@ from flows.Fraud_trait_extractor_flow import trait_extractor_flow
 
 trait_extractor_flow.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/Fraud_trait_extractor.py:trait_extractor_flow",
+    entrypoint="src/flows/Fraud_trait_extractor_flow.py:trait_extractor_flow",
 ).deploy(
     name="Fraud_case_trait_extractor",
     tags=["extractor", "Fraud_case", "Fraud_classification"],

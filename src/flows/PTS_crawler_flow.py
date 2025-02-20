@@ -10,8 +10,6 @@ from utils.text_handler import clean_content
 from utils.request_check import request_with_retry
 from prefect.blocks.notifications import SlackWebhook
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
-
 @task
 def scrape_website(pagenum: int = 20) -> list: # 測試限制爬取 i 頁 (記得修改)<共100頁>
     url_start = "https://news.pts.org.tw/tag/128?page="
@@ -73,6 +71,7 @@ def data_transformation(result):
 
 @flow(name="PTS_crawler")
 def PTS_news_scraper_pipeline(pagenum: int = 20):
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Task dependencies
         scraped_data = scrape_website(pagenum)
@@ -109,7 +108,7 @@ if __name__ == "__main__":
         name="pts_news_crawler_deployment",
         tags=["web crawler", "PTS", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         parameters=dict(pagenum = int(20)),
         cron="0 13 * * *"
     )

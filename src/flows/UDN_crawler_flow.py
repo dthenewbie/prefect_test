@@ -15,7 +15,6 @@ from utils.request_check import request_with_retry
 from utils.selenium_setting import setup_driver
 from prefect.blocks.notifications import SlackWebhook
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
 
 def scrape_news_details(detail_url, retries=3) -> str:
     """進入新聞詳細頁，帶重試機制爬取內文內容。"""
@@ -116,6 +115,7 @@ def data_transformation(result):
 
 @flow(name="UDN_news_scraper_pipeline")
 def UDN_news_scraper_pipeline(scroll_round: int = 20):
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Define task dependencies
         scraped_data = scrape_main_page(scroll_round)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
         name="UDN_news_crawler_deployment",
         tags=["web crawler", "UDN", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         parameters=dict(scroll_round= int(20)),
         cron="0 15 * * *"
     )

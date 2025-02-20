@@ -11,8 +11,6 @@ from tasks.insert_db import save_to_caseprocessing
 from utils.request_check import request_with_retry
 from prefect.blocks.notifications import SlackWebhook
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
-
 def getPageContent(soup) -> dict:
     try:
         Title = soup.select_one("tbody tr td").text.strip()
@@ -84,6 +82,7 @@ def data_transformation(result) -> dict:
 
 @flow(name="Kaohsiung_Police_Department_crawler")
 def Kaohsiung_Police_Department_scraper_pipeline():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Task dependencies
         result = Scrape_page()
@@ -119,7 +118,7 @@ if __name__ == "__main__":
         name="Kaohsiung_Police_Department_crawler_deployment",
         tags=["web crawler", "Kaohsiung_Police_Department", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 9 * * 3"
     )

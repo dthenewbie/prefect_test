@@ -3,7 +3,6 @@ from prefect.blocks.notifications import SlackWebhook
 import requests
 from utils.connect_db import connect_db
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
 
 def fetch_api_data(url) -> list[dict]:
     headers = {
@@ -24,6 +23,7 @@ def fetch_api_data(url) -> list[dict]:
         return []
 @task
 def save_to_Fraud_Line_ID():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     api_url = "https://od.moi.gov.tw/api/v1/rest/datastore/A01010000C-001277-053"
     records = fetch_api_data(api_url)
     success_count = 0
@@ -45,6 +45,7 @@ def save_to_Fraud_Line_ID():
 
 @flow(name="Fraud_Line_ID_api")
 def Fraud_Line_ID_api():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         save_to_Fraud_Line_ID()
     except Exception as e:
@@ -74,7 +75,7 @@ if __name__ == "__main__":
         name="Fraud_Line_ID_api",
         tags=["API", "Open Data", "Fraud_Line_ID"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 18 * * *"
     )

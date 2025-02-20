@@ -12,8 +12,6 @@ from utils.text_handler import clean_content
 from utils.request_check import request_with_retry
 
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
-
 def getPageContent(soup) -> dict:
     try:
         Title = soup.select_one("div.pageHeader h2").text.strip()
@@ -83,6 +81,7 @@ def data_transformation(result) -> dict:
 
 @flow(name="New_Taipei_Police_Department_crawler")
 def New_Taipei_Police_Department_scraper_pipeline():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Task dependencies
         result = Scrape_page()
@@ -118,7 +117,7 @@ if __name__ == "__main__":
         name="New_Taipei_Police_Department_crawler_deployment",
         tags=["web crawler", "New_Taipei_Police_Department", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         # parameters=dict(name="Marvin"),
         cron="0 11 * * 3",
     )

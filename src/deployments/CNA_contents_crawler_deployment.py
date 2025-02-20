@@ -4,7 +4,7 @@ from flows.CNA_contents_crawler_flow import CNA_news_scraper_pipeline
 
 CNA_news_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/CNA_contents_crawler.py:CNA_news_scraper_pipeline",
+    entrypoint="src/flows/CNA_contents_crawler_flow.py:CNA_news_scraper_pipeline",
 ).deploy(
     name="CNA_Contents_Crawler_deployment",
     tags=["web crawler", "CNA", "case processing"],

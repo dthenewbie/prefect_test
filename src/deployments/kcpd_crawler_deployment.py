@@ -4,7 +4,7 @@ from flows.kcpd_crawler_flow import Kaohsiung_Police_Department_scraper_pipeline
 
 Kaohsiung_Police_Department_scraper_pipeline.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/kcpd_crawler.py:Kaohsiung_Police_Department_scraper_pipeline",
+    entrypoint="src/flows/kcpd_crawler_flow.py:Kaohsiung_Police_Department_scraper_pipeline",
 ).deploy(
     name="Kaohsiung_Police_Department_crawler_deployment",
     tags=["web crawler", "Kaohsiung_Police_Department", "case processing"],

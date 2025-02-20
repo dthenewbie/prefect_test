@@ -11,13 +11,14 @@ from utils.text_handler import clean_content
 from tasks.insert_db import save_to_caseprocessing
 from utils.request_check import request_with_retry
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
+
 
 @task
 def scrape_website(pages: int =20) -> list:
         """
         pages 為目標爬取頁數
         """
+        slack_webhook_block = SlackWebhook.load("flowcheck")
         url_base = "https://www.ettoday.net/news_search/doSearch.php?keywords=%E8%A9%90%E9%A8%99&idx=1&page="
         all_data = []
         processed_data = set()
@@ -91,6 +92,7 @@ def data_transformation(result):
 
 @flow(name="ETtoday_crawler")
 def ETtoday_news_scraper_pipeline(pages: int =20):
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         scraped_data = scrape_website(pages)
         result_formated = data_transformation(scraped_data)
@@ -124,7 +126,7 @@ if __name__ == "__main__":
         name="ETtoday_crawler_deployment",
         tags=["web crawler", "ETtoday", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         parameters=dict(pages=int(20)),
         cron="0 14 * * *"
     )

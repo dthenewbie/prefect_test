@@ -15,8 +15,6 @@ from utils.selenium_setting import setup_driver
 from tasks.insert_db import save_to_caseprocessing
 from prefect.blocks.notifications import SlackWebhook
 
-slack_webhook_block = SlackWebhook.load("flowcheck")
-
 
 def get_soup(driver, url):
     """
@@ -119,6 +117,7 @@ def data_transformation(result):
 
 @flow(name="PTT_scraper_pipeline")
 def PTT_scraper_pipeline(pagenum: int = 20):
+    slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Task dependencies
         result = get_data_list(pagenum)
@@ -154,7 +153,7 @@ if __name__ == "__main__":
         name="PTT_crawler_deployment",
         tags=["web crawler", "PTT", "case processing"],
         work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
+        job_variables=dict(pull_policy="Never"),
         parameters=dict(pagenum = int(20)),
         cron="0 8 * * *"
     )
