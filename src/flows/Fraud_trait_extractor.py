@@ -41,7 +41,7 @@ def access_secret_version(project_id='gcppytest-447615',
         # Print the secret payload.
         # snippet is showing how to access the secret material.
         openai_api_key = response.payload.data.decode("UTF-8")
-        print(openai_api_key)
+
         return openai_api_key
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | task 【access_secret_version】 failed: {e}")
