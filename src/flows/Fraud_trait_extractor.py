@@ -4,6 +4,7 @@ import json
 import pandas as pd
 import pymysql
 from prefect import flow, task
+from prefect_gcp import GcpCredentials
 from prefect.blocks.notifications import SlackWebhook
 import re
 import logging
@@ -12,8 +13,6 @@ import uuid
 from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from langchain_community.callbacks import get_openai_callback
-from dotenv import load_dotenv
-
 
 
 slack_webhook_block = SlackWebhook.load("flowcheck")
@@ -28,10 +27,11 @@ def access_secret_version(project_id='gcppytest-447615',
     Access the payload for the given secret version if one exists. The version
     can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
     """
-    load_dotenv()
+    gcp_credentials_block = GcpCredentials.load("darylcredential")
+    
     try:
         # Create the Secret Manager client.
-        client = secretmanager.SecretManagerServiceClient()
+        client = gcp_credentials_block.get_secret_manager_client()
 
         # Build the resource name of the secret version.
         name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
@@ -41,10 +41,10 @@ def access_secret_version(project_id='gcppytest-447615',
         # Print the secret payload.
         # snippet is showing how to access the secret material.
         openai_api_key = response.payload.data.decode("UTF-8")
-
+        print(openai_api_key)
         return openai_api_key
     except Exception as e:
-        slack_webhook_block.notify(f"| ERROR   | flow 【access_secret_version】 failed: {e}")
+        slack_webhook_block.notify(f"| ERROR   | task 【access_secret_version】 failed: {e}")
         return None
 
     
@@ -484,7 +484,7 @@ def trait_extractor_flow():
 
 if __name__ == "__main__":
     
-    # trait_extractor_flow()
+    trait_extractor_flow()
 
     # # temporary local server of worker
     # trait_extractor_flow.serve(
@@ -496,16 +496,16 @@ if __name__ == "__main__":
     #     # interval=60,  # Like crontab, "* * * * *"
     #     cron="* 18 * * *",
     # )
-    from prefect_github import GitHubRepository
+    # from prefect_github import GitHubRepository
 
-    trait_extractor_flow.from_source(
-    source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/Fraud_trait_extractor.py:trait_extractor_flow",
-    ).deploy(
-        name="Fraud_case_trait_extractor",
-        tags=["extractor", "Fraud_case", "Fraud_classification"],
-        work_pool_name="antifraud",
-        # job_variables=dict(pull_policy="Never"),
-        # parameters=dict(name="Marvin"),
-        cron="0 20 * * *"
-    )
+    # trait_extractor_flow.from_source(
+    # source=GitHubRepository.load("antifraud"),
+    # entrypoint="src/flows/Fraud_trait_extractor.py:trait_extractor_flow",
+    # ).deploy(
+    #     name="Fraud_case_trait_extractor",
+    #     tags=["extractor", "Fraud_case", "Fraud_classification"],
+    #     work_pool_name="antifraud",
+    #     # job_variables=dict(pull_policy="Never"),
+    #     # parameters=dict(name="Marvin"),
+    #     cron="0 20 * * *"
+    # )
