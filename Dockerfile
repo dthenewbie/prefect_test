@@ -4,7 +4,6 @@ ENV TZ=Asia/Taipei
 
 COPY requirements.txt requirements.txt
 COPY ./src/ app/src/
-COPY gcp_credentials.json app/gcp_credentials.json
 
 RUN apt-get update && \
     apt-get install git zsh vim curl wget zip procps gcc python3-dev -y && \
@@ -13,8 +12,6 @@ RUN apt-get update && \
 
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
-
-ENV GOOGLE_APPLICATION_CREDENTIALS="/app/prefect_test/gcp_credential_owner.json"
 
 # Prefect config
 RUN prefect config set PREFECT_LOGGING_LOG_PRINTS=True
