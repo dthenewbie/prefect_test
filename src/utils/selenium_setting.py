@@ -24,7 +24,7 @@ def setup_driver():
     chrome_options.add_argument("--enable-unsafe-swiftshader")
     chrome_options.add_argument('--user-agent=%s' % userAgent)
     driver = webdriver.Remote(
-        command_executor=f"http://104.199.140.157:14444/wd/hub",
+        command_executor=f"http://34.123.14.100:14444/wd/hub",
         options=chrome_options,
     )
     return driver
