@@ -20,8 +20,8 @@ from langchain_community.callbacks import get_openai_callback
 # Function call to get api key
 @task
 def access_secret_version(project_id='gcppytest-447615', 
-                          secret_id='openai_api_key', 
-                          version_id='2') ->str:
+                          secret_id='open_api_key_mine', 
+                          version_id='1') ->str:
     
     """
     Access the payload for the given secret version if one exists. The version
