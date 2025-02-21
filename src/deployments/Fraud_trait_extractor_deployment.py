@@ -10,6 +10,5 @@ trait_extractor_flow.from_source(
     work_pool_name="antifraud",
     job_variables=dict(pull_policy="Never"),
     # parameters=dict(name="Marvin"),
-    cron="0 20 * * *",
-    timezone="Asia/Taipei"
+    cron="0 20 * * *"
 )

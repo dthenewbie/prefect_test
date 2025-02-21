@@ -11,6 +11,5 @@ dashboard_scraper_pipeline.from_source(
     work_pool_name="antifraud",
     job_variables=dict(pull_policy="Never"),
     parameters=dict(scroll_round=int(20), selenium_IP="104.199.140.157"),
-    cron="0 13 * * *",
-    timezone="Asia/Taipei"
+    cron="0 13 * * *"
 )

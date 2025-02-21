@@ -11,6 +11,5 @@ PTT_scraper_pipeline.from_source(
     work_pool_name="antifraud",
     job_variables=dict(pull_policy="Never"),
     parameters=dict(pagenum = int(20), selenium_IP = "104.199.140.157"),
-    cron="0 8 * * *",
-    timezone="Asia/Taipei"
+    cron="0 8 * * *"
 )

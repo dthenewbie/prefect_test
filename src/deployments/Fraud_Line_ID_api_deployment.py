@@ -10,6 +10,5 @@ Fraud_Line_ID_api.from_source(
     work_pool_name="antifraud",
     # job_variables=dict(pull_policy="Never"),
     # parameters=dict(name="Marvin"),
-    cron="0 18 * * *",
-    timezone="Asia/Taipei"
+    cron="0 18 * * *"
 )

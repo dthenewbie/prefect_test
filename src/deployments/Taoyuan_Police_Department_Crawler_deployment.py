@@ -11,6 +11,5 @@ Taoyuan_Police_Department_scraper_pipeline.from_source(
     work_pool_name="antifraud",
     job_variables=dict(pull_policy="Never"),
     # parameters=dict(name="Marvin"),
-    cron="0 10 * * 3",
-    timezone="Asia/Taipei"
+    cron="0 10 * * 3"
 )
