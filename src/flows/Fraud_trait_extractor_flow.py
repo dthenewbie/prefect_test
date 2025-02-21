@@ -438,7 +438,7 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
     if [transformed_data, fraud_classifications, case_updates, non_fraud_cases] == [[], [], [], []]:
         return slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 No data to process.")
     try:
-        db = MySQLHandler(host='35.229.167.236',
+        db = MySQLHandler(host='104.199.228.45',
                         port=3306, 
                         user='root', 
                         password='my-secret-pw', 
