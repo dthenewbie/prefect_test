@@ -34,11 +34,11 @@ def get_article_links(soup) -> list:
     articles = soup.select("div.r-ent div.title a")
     return [a["href"] for a in articles]
 
-def get_article_content(base_url, article_url, selenium_IP: str = "104.199.140.157") -> dict:
+def get_article_content(base_url, article_url) -> dict:
     """
     提取文章所需欄位
     """
-    driver_content = setup_driver(selenium_IP)
+    driver_content = setup_driver()
     try:
         soup = get_soup(driver_content, f"{base_url}{article_url}")
         titleTag = soup.select_one("meta[property='og:title']")
@@ -63,7 +63,7 @@ def get_article_content(base_url, article_url, selenium_IP: str = "104.199.140.1
         "Url": f"{base_url}{article_url}",
         "Area": None}
 @task
-def get_data_list(pagenum: int = 20, selenium_IP: str = "104.199.140.157"):
+def get_data_list(pagenum: int = 20):
     """
     爬取所有頁面的文章內容
     """
@@ -71,12 +71,12 @@ def get_data_list(pagenum: int = 20, selenium_IP: str = "104.199.140.157"):
     start_url = f"{base_url}/bbs/Bunco/index.html"
     all_articles = []
     current_url = start_url
-    driver = setup_driver(selenium_IP)
+    driver = setup_driver()
     try:
         # while True:
         for _ in range(pagenum): # ----------爬蟲頁數------------(記得修改)
             soup = get_soup(driver, current_url)
-            article_links = get_article_links(soup, selenium_IP)
+            article_links = get_article_links(soup)
             for link in article_links:
                 try:
                     article_content = get_article_content(base_url, link)
@@ -116,11 +116,11 @@ def data_transformation(result):
     return result_formated
 
 @flow(name="PTT_scraper_pipeline")
-def PTT_scraper_pipeline(pagenum: int = 20, selenium_IP: str = "104.199.140.157"):
+def PTT_scraper_pipeline(pagenum: int = 20):
     slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Task dependencies
-        result = get_data_list(pagenum, selenium_IP)
+        result = get_data_list(pagenum)
         result_formated = data_transformation(result)
         save_to_caseprocessing(result_formated, "PTT_crawler")
         slack_webhook_block.notify(f"| INFO    | flow 【PTT_crawler】 finished")
@@ -154,6 +154,6 @@ if __name__ == "__main__":
         tags=["web crawler", "PTT", "case processing"],
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
-        parameters=dict(pagenum = int(20), selenium_IP = "104.199.140.157"),
+        parameters=dict(pagenum = int(20)),
         cron="0 8 * * *"
     )

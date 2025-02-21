@@ -4,7 +4,7 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-def setup_driver(selenium_IP: str="104.199.140.157"):
+def setup_driver():
     """設定 Selenium 瀏覽器參數。"""
     display = Display(visible=0, size=(1920, 1080)) 
     display.start()
@@ -24,7 +24,7 @@ def setup_driver(selenium_IP: str="104.199.140.157"):
     chrome_options.add_argument("--enable-unsafe-swiftshader")
     chrome_options.add_argument('--user-agent=%s' % userAgent)
     driver = webdriver.Remote(
-        command_executor=f"http://{selenium_IP}:14444/wd/hub",
+        command_executor=f"http://104.199.140.157:14444/wd/hub",
         options=chrome_options,
     )
     return driver

@@ -14,10 +14,10 @@ from prefect.blocks.notifications import SlackWebhook
 
 
 @task
-def scrape_website(scroll_round:int, selenium_IP: str="104.199.140.157") -> list:
+def scrape_website(scroll_round:int) -> list:
     slack_webhook_block = SlackWebhook.load("flowcheck")
     url = "https://165dashboard.tw/city-case-summary"  # 目標網址
-    driver = setup_driver(selenium_IP)
+    driver = setup_driver()
     driver.get(url)
 
     all_data = []
@@ -140,10 +140,10 @@ def data_transformation(result):
     
 # Define task dependencies
 @flow(name="165dashboard_crawler")
-def dashboard_scraper_pipeline(scroll_round: int = 20, selenium_IP: str = "104.199.140.157"):
+def dashboard_scraper_pipeline(scroll_round: int = 20):
     slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
-        scraped_data = scrape_website(scroll_round, selenium_IP)
+        scraped_data = scrape_website(scroll_round)
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "165dashboard_crawler")
         slack_webhook_block.notify(f"| SUCCESS | flow 【165dashboard_crawler】 success.")
@@ -176,6 +176,6 @@ if __name__ == "__main__":
         tags=["web crawler", "165 dashboard", "case processing"],
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
-        parameters=dict(scroll_round=int(20), selenium_IP="104.199.140.157"),
+        parameters=dict(scroll_round=int(20)),
         cron="0 13 * * *"
     )

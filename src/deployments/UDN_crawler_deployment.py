@@ -10,6 +10,6 @@ UDN_news_scraper_pipeline.from_source(
     tags=["web crawler", "UDN", "case processing"],
     work_pool_name="antifraud",
     job_variables=dict(pull_policy="Never"),
-    parameters=dict(scroll_round= int(20), selenium_IP="104.199.140.157"),
+    parameters=dict(scroll_round= int(20)),
     cron="0 15 * * *"
 )

@@ -35,10 +35,10 @@ def scrape_news_details(detail_url, retries=3) -> str:
     return content
 
 @task()
-def scrape_main_page(scroll_round: int = 20, selenium_IP: str = "104.199.140.157"):
+def scrape_main_page(scroll_round: int = 20):
     """爬取主頁內容，並進一步進入每個新聞的詳細頁。"""
     url = "https://udn.com/search/tagging/2/%E8%A9%90%E9%A8%99%E9%9B%86%E5%9C%98"
-    driver = setup_driver(selenium_IP)
+    driver = setup_driver()
     driver.get(url)
 
     processed_urls = set()
@@ -114,11 +114,11 @@ def data_transformation(result):
     return result_formated
 
 @flow(name="UDN_news_scraper_pipeline")
-def UDN_news_scraper_pipeline(scroll_round: int = 20, selenium_IP: str = "104.199.140.157"):
+def UDN_news_scraper_pipeline(scroll_round: int = 20):
     slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Define task dependencies
-        scraped_data = scrape_main_page(scroll_round, selenium_IP)
+        scraped_data = scrape_main_page(scroll_round)
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "UDN_news_scraper_pipeline")
     except Exception as e:
@@ -150,6 +150,6 @@ if __name__ == "__main__":
         tags=["web crawler", "UDN", "case processing"],
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
-        parameters=dict(scroll_round= int(20), selenium_IP="104.199.140.157"),
+        parameters=dict(scroll_round= int(20)),
         cron="0 15 * * *"
     )
