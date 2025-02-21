@@ -5,6 +5,7 @@ pandas
 pendulum
 prefect
 prefect-github
+prefect_gcp
 requests
 sqlalchemy
 selenium

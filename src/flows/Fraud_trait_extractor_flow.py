@@ -370,10 +370,10 @@ class MySQLHandler:
             
 @task
 def Extract_from_Fraud_case():
-    db = MySQLHandler(host='host.docker.internal',
+    db = MySQLHandler(host='104.199.228.45',
                     port=3306, 
                     user='root', 
-                    password='password', 
+                    password='my-secret-pw', 
                     database='Anti_Fraud')
     cases = db.fetch_unprocessed_cases()[:20] # 取前20筆
     print(f"Fetched {len(cases)} unprocessed cases.")
