@@ -2,7 +2,7 @@ import pymysql
 def connect_db():
     try:
         conn = pymysql.connect(
-        host = '104.199.228.45',
+        host = '35.201.141.125',
         port = 3306,
         user = 'root',
         passwd = 'my-secret-pw',
