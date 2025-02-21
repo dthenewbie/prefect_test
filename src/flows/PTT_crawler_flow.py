@@ -34,11 +34,11 @@ def get_article_links(soup) -> list:
     articles = soup.select("div.r-ent div.title a")
     return [a["href"] for a in articles]
 
-def get_article_content(base_url, article_url) -> dict:
+def get_article_content(base_url, article_url, selenium_IP: str = "104.199.140.157") -> dict:
     """
     提取文章所需欄位
     """
-    driver_content = setup_driver()
+    driver_content = setup_driver(selenium_IP)
     try:
         soup = get_soup(driver_content, f"{base_url}{article_url}")
         titleTag = soup.select_one("meta[property='og:title']")
@@ -76,7 +76,7 @@ def get_data_list(pagenum: int = 20, selenium_IP: str = "104.199.140.157"):
         # while True:
         for _ in range(pagenum): # ----------爬蟲頁數------------(記得修改)
             soup = get_soup(driver, current_url)
-            article_links = get_article_links(soup)
+            article_links = get_article_links(soup, selenium_IP)
             for link in article_links:
                 try:
                     article_content = get_article_content(base_url, link)
