@@ -136,13 +136,11 @@ if __name__ == "__main__":
 
     # # temporary local server of worker
     # PTT_scraper_pipeline.serve(
-    #     name="PTT_crawler",  # Deployment name. It create a temporary deployment.
+    #     name="PTT_crawler_deployment_test",  # Deployment name. It create a temporary deployment.
     #     tags=["web crawler", "PTT", "case processing"],  # Filtering when searching on UI.
-    #     # parameters={
-    #     #     "goodbye": True
-    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     parameters=dict(pagenum = int(20)),  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
     #     # interval=60,  # Like crontab, "* * * * *"
-    #     cron="*/5 * * * *",
+    #     cron="0 8 * * *",
     # )
 
     from prefect_github import GitHubRepository
