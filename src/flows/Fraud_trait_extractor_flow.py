@@ -167,13 +167,15 @@ class FraudContentExtractor:
             - 14: 騙取金融帳戶
             - 15: 繳費詐騙
             It is possible for an article to involve multiple fraud types, like [1, 2].
-            **Please return list with at least one most relevant Fraud_type_ID like [1].**
-            Do not return **None "None" or ""** or **empty list []**. 
+            **If it is related to fraud, Please return list with at least one most relevant Fraud_type_ID like [1].**
+            If it is not related to fraud, return **empty list []**. 
+            Do not return **None "None" or ""** or something else.
 
             8. **Is_Fraud (是否為詐騙文章)**: *type: int (1 or 0)*  
             Determine whether the article is related to fraud.  
             Return 1 if it is fraud-related, or 0 if it is not.
             You must identify whether the article is related to fraud or not. Do not return **None "None" or ""**.
+            ### ⚠️**If the result of Fraud_type is [], there's no way the article is related to fraud, so return 0.** this is a must. Stictly follow this rule.
             ---
 
             ### ⚠️ **Important Guidelines:**  
