@@ -511,5 +511,6 @@ if __name__ == "__main__":
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
         parameters=dict(rounds= int(100)),
-        cron="0 20 * * *"
+        cron="0 20 * * *",
+        timezone="Asia/Taipei"
     )

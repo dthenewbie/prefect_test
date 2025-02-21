@@ -63,7 +63,7 @@ def get_article_content(base_url, article_url) -> dict:
         "Url": f"{base_url}{article_url}",
         "Area": None}
 @task
-def get_data_list(pagenum: int = 20):
+def get_data_list(pagenum: int = 20, selenium_IP: str = "104.199.140.157"):
     """
     爬取所有頁面的文章內容
     """
@@ -71,7 +71,7 @@ def get_data_list(pagenum: int = 20):
     start_url = f"{base_url}/bbs/Bunco/index.html"
     all_articles = []
     current_url = start_url
-    driver = setup_driver()
+    driver = setup_driver(selenium_IP)
     try:
         # while True:
         for _ in range(pagenum): # ----------爬蟲頁數------------(記得修改)
@@ -116,11 +116,11 @@ def data_transformation(result):
     return result_formated
 
 @flow(name="PTT_scraper_pipeline")
-def PTT_scraper_pipeline(pagenum: int = 20):
+def PTT_scraper_pipeline(pagenum: int = 20, selenium_IP: str = "104.199.140.157"):
     slack_webhook_block = SlackWebhook.load("flowcheck")
     try:
         # Task dependencies
-        result = get_data_list(pagenum)
+        result = get_data_list(pagenum, selenium_IP)
         result_formated = data_transformation(result)
         save_to_caseprocessing(result_formated, "PTT_crawler")
         slack_webhook_block.notify(f"| INFO    | flow 【PTT_crawler】 finished")
@@ -155,5 +155,6 @@ if __name__ == "__main__":
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
         parameters=dict(pagenum = int(20)),
-        cron="0 8 * * *"
+        cron="0 8 * * *",
+        timezone="Asia/Taipei"
     )

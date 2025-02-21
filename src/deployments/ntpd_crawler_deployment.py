@@ -12,4 +12,5 @@ New_Taipei_Police_Department_scraper_pipeline.from_source(
     job_variables=dict(pull_policy="Never"),
     # parameters=dict(name="Marvin"),
     cron="0 11 * * 3",
+    timezone="Asia/Taipei"
 )

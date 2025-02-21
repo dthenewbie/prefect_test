@@ -128,5 +128,6 @@ if __name__ == "__main__":
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
         parameters=dict(pages=int(20)),
-        cron="0 14 * * *"
+        cron="0 14 * * *",
+        timezone="Asia/Taipei"
     )
