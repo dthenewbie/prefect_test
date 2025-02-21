@@ -1,4 +1,4 @@
-from pyvirtualdisplay import Display
+# from pyvirtualdisplay import Display
 from fake_useragent import UserAgent
 import selenium
 from selenium import webdriver
@@ -6,8 +6,8 @@ from selenium.webdriver.chrome.options import Options
 
 def setup_driver():
     """設定 Selenium 瀏覽器參數。"""
-    display = Display(visible=0, size=(1920, 1080)) 
-    display.start()
+    # display = Display(visible=0, size=(1920, 1080)) 
+    # display.start()
     ua = UserAgent()
     userAgent = ua.chrome
     chrome_options = Options()
