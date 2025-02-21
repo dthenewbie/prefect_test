@@ -176,7 +176,7 @@ if __name__ == "__main__":
         tags=["web crawler", "165 dashboard", "case processing"],
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
-        parameters=dict(scroll_round=int(20)),
+        parameters=dict(scroll_round=int(20), selenium_IP="104.199.140.157"),
         cron="0 13 * * *",
         timezone="Asia/Taipei"
     )
