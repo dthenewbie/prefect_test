@@ -486,6 +486,8 @@ def trait_extractor_flow(rounds: int = 100):
         except Exception as e:
             print(e)
             slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {e}")
+            if "Can't connect to MySQ" in str(e):
+                break
     slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{fraud_success_input}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
 
 if __name__ == "__main__":
