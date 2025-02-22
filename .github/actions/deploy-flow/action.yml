@@ -7,9 +7,6 @@ inputs:
     description: 'Prefect Cloud API key'
     required: false
     default: ""
-  prefect_api_url:
-    description: 'Prefect Cloud API URL'
-    required: true
   flow_python_path:
     description: 'Prefect flow python path e.g. src/flows/sample/hello_world_flow.py'
     required: true
@@ -46,8 +43,6 @@ runs:
     - id: login-prefect
       run: |
         prefect config set PREFECT_API_KEY=${{ inputs.prefect_api_key }}
-        prefect config set PREFECT_API_URL=${{ inputs.prefect_api_url }}
-        prefect config set PREFECT_LOGGING_LOG_PRINTS=True
       shell: bash
 
     - run: |
