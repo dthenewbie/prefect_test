@@ -53,4 +53,5 @@ jobs:
         uses: ./.github/actions/deploy-flow
         with:
           prefect_api_key: ${{ secrets.PREFECT_TOKEN }}
+          prefect_api_url: ${{ secrets.PREFECT_API_URL }}
           flow_python_path: ${{ steps.flow.outputs.flow_python_path }}
