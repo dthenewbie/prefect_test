@@ -26,7 +26,7 @@ def save_to_caseprocessing(data: list, flow_name: str) -> None:
             for record in data:
                 try:
                     sql = """
-                    INSERT INTO Case_processing_3 
+                    INSERT INTO Case_processing
                     (ID, Title, Reported_Date, Content, Url, Area) 
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """
