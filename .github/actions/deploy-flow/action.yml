@@ -1,7 +1,7 @@
 # Refer to https://github.com/anna-geller/prefect-cloud-gcp/blob/main/.github/actions/deploy-flows/action.yml
 name: 'Deploy flows'
 
-description: 'Deploy flows to Prefect Cloud and Google Cloud Run'
+description: 'Deploy flows to Prefect Cloud'
 inputs:
   prefect_api_key:
     description: 'Prefect Cloud API key'
@@ -42,7 +42,7 @@ runs:
 
     - id: login-prefect
       run: |
-        prefect config set PREFECT_API_KEY=${{ inputs.prefect_api_key }}
+        prefect cloud login -k ${{ inputs.prefect_api_key }}
       shell: bash
 
     - run: |
