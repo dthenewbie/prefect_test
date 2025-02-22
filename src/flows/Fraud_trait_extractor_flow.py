@@ -403,21 +403,22 @@ def openai_trait_extractor(cases: tuple, open_api_key: str):
             if 'error' in extracted_data:
                 slack_webhook_block.notify(f"| ERROR   | flow 【trait_extractor】 failed: {extracted_data['error']}")
                 break
-            if extracted_data.get('Is_Fraud', 0) == 0:
+            # Status = 1, Is_Fraud = 0(or Fraud_type = [])
+            if extracted_data.get('Is_Fraud', 0) == 0 or extracted_data.get('Fraud_type', []) == []:
                 non_fraud_cases.append(case_id)
             else:
                 fraud_case_data = (
-                    case_id or str(uuid.uuid4()), 
+                    case_id or str(uuid.uuid4()),
                     # title,
-                    clean_content(title), 
-                    reported_date, 
+                    clean_content(title),
+                    reported_date,
                     area if area else extracted_data.get('Area', None),
-                    extracted_data.get('Platform', None), 
+                    extracted_data.get('Platform', None),
                     extracted_data.get('Victim_Gender', None),
-                    extracted_data.get('Victim_Age', None), 
+                    extracted_data.get('Victim_Age', None),
                     extracted_data.get('Victim_Career', None),
-                    extracted_data.get('Financial_Loss', None), 
-                    # content, 
+                    extracted_data.get('Financial_Loss', None),
+                    # content,
                     clean_content(content),
                     url
                 )
