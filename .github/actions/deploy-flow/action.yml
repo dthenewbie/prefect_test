@@ -7,6 +7,9 @@ inputs:
     description: 'Prefect Cloud API key'
     required: false
     default: ""
+  prefect_api_url:
+    description: 'Prefect Cloud API URL'
+    required: true
   flow_python_path:
     description: 'Prefect flow python path e.g. src/flows/sample/hello_world_flow.py'
     required: true
