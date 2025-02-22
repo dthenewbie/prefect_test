@@ -1,0 +1,81 @@
+from prefect import flow, task
+from prefect.blocks.notifications import SlackWebhook
+import requests
+from utils.connect_db import connect_db
+
+
+def fetch_api_data(url) -> list[dict]:
+    headers = {
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36"}
+    try:
+        response = requests.get(headers=headers, url=url)
+        response.raise_for_status()  # 檢查 HTTP 回應是否有錯誤
+        data = response.json()
+        
+        if data.get("success"):
+            records = data.get("result", {}).get("records", [])
+            return records
+        else:
+            print("API 回應失敗")
+            return []
+    except requests.exceptions.RequestException as e:
+        print(f"API 請求錯誤: {e}")
+        return []
+@task
+def save_to_Fraud_Weburl():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
+    api_url = "https://od.moi.gov.tw/api/v1/rest/datastore/A01010000C-002150-013"
+    records = fetch_api_data(api_url)
+    success_count = 0
+    sql = """
+    INSERT INTO Fraud_Weburl (Url, Web_name)
+    VALUES (%s, %s)
+    """
+    conn = connect_db()
+    with conn.cursor() as cursor:
+        for record in records[1:]:
+            try:
+                cursor.execute(sql, (record['WEBURL'], record['WEBSITE_NM']))
+                success_count += 1
+            except Exception as e:
+                continue
+        conn.commit()
+    conn.close()
+    slack_webhook_block.notify(f"| INFO    | {success_count} new URL saved to Fraud_Weburl successfully")
+
+@flow(name="Fraud_Weburl_api")
+def Fraud_Weburl_api():
+    slack_webhook_block = SlackWebhook.load("flowcheck")
+    try:
+        save_to_Fraud_Weburl()
+    except Exception as e:
+        slack_webhook_block.notify(f"| ERROR   | flow 【Fraud_Weburl_api】 failed: {e}")
+
+if __name__ == "__main__":
+
+    # Fraud_Weburl_api()
+    
+    # # temporary local server of worker
+    # Fraud_Weburl_api.serve(
+    #     name="Fraud_Weburl_api",  # Deployment name. It create a temporary deployment.
+    #     tags=["API", "Open Data", "Fraud_Weburl"],  # Filtering when searching on UI.
+    #     # parameters={
+    #     #     "goodbye": True
+    #     # },  # Overwrite default parameters defined on hello_world_flow. Only for this deployment.
+    #     # interval=60,  # Like crontab, "* * * * *"
+    #     cron="0 17 * * *",
+    # )
+
+    from prefect_github import GitHubRepository
+
+    Fraud_Weburl_api.from_source(
+    source=GitHubRepository.load("antifraud"),
+    entrypoint="src/flows/Fraud_Weburl_api_flow.py:Fraud_Weburl_api",
+    ).deploy(
+        name="Fraud_Weburl_api",
+        tags=["API", "Open Data", "Fraud_Weburl"],
+        work_pool_name="antifraud",
+        job_variables=dict(pull_policy="Never"),
+        # parameters=dict(name="Marvin"),
+        cron="0 18 * * *"
+    )
