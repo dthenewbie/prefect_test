@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     Fraud_Weburl_api.from_source(
     source=GitHubRepository.load("antifraud"),
-    entrypoint="src/flows/Fraud_Weburl_api_flow.py:Fraud_Weburl_api",
+    entrypoint="src/flows/Fraud_weburl_api_flow.py:Fraud_Weburl_api",
     ).deploy(
         name="Fraud_Weburl_api",
         tags=["API", "Open Data", "Fraud_Weburl"],
