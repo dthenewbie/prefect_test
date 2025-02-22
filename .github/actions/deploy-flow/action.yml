@@ -42,7 +42,8 @@ runs:
 
     - id: login-prefect
       run: |
-        prefect cloud login -k ${{ inputs.prefect_api_key }}
+        prefect config set PREFECT_API_KEY=${{ inputs.prefect_api_key }}
+        prefect config set PREFECT_API_URL=${{ inputs.prefect_api_url }}
       shell: bash
 
     - run: |
