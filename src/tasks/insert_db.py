@@ -20,11 +20,14 @@ def save_to_caseprocessing(data: list, flow_name: str) -> None:
     """
     slack_webhook_block = SlackWebhook.load("flowcheck")
     insert_success_count = 0
+    error_count = 0
     conn = connect_db()
     if conn is not None:
         with conn.cursor() as cursor:
             for record in data:
                 try:
+                    # 錯誤計次歸0
+                    error_count = 0
                     sql = """
                     INSERT INTO Case_processing
                     (ID, Title, Reported_Date, Content, Url, Area) 
@@ -44,8 +47,14 @@ def save_to_caseprocessing(data: list, flow_name: str) -> None:
                         # print("Record already exists in the table.")
                         pass
                 except Exception as e:
-                    slack_webhook_block.notify(f"| ERROR   | 【{flow_name}】 when save_to_caseprocessing: {e}")
+                    error_count += 1
                     print(f"| ERROR   | 【{flow_name}】 when save_to_caseprocessing: {e}")
+                    if error_count == 1:
+                        slack_webhook_block.notify(f"| ERROR   | 【{flow_name}】 when save_to_caseprocessing: {e}")
+                    # 連續匯入失敗，判斷失敗
+                    elif error_count > 25:
+                        slack_webhook_block.notify(f"| CRITICAL| 【{flow_name}】 save_to_caseprocessing failed: {e}")
+                        break
         conn.commit()
         slack_webhook_block.notify(f"| INFO    | 【{flow_name}】: Inserted successfully {insert_success_count}/{len(data)} into Case_processing.")
         print(f"| INFO    | 【{flow_name}】 : Inserted successfully {insert_success_count}/{len(data)} into Case_processing.")
