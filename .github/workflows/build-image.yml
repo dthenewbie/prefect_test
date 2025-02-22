@@ -20,5 +20,5 @@ jobs:
 
     - name: Docker build
       run: |
-        docker build -t ghcr.io/dthenewbie/${{ github.event.repository.name }}:latest .
-        docker push ghcr.io/dthenewbie/${{ github.event.repository.name }}:latest
+        docker build -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest .
+        docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest
