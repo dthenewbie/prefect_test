@@ -10,6 +10,9 @@ inputs:
   prefect_api_url:
     description: 'Prefect Cloud API URL'
     required: true
+  prefect_workspace:
+    description: 'Prefect Workspace'
+    required: true
   flow_python_path:
     description: 'Prefect flow python path e.g. src/flows/sample/hello_world_flow.py'
     required: true
@@ -42,12 +45,12 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       run: pip install -r requirements.txt
       shell: bash
-
-    - id: login-prefect
-      run: |
-        prefect config set PREFECT_API_KEY=${{ inputs.prefect_api_key }}
-        prefect config set PREFECT_API_URL=${{ inputs.prefect_api_url }}
-      shell: bash
+      
+    - name: Prefect Auth
+      uses: PrefectHQ/actions-prefect-auth@v2
+      with:
+        prefect-api-key: ${{ inputs.prefect_api_key }}
+        prefect-workspace: ${{ inputs.prefect_workspace }}
 
     - run: |
         python ${{ inputs.flow_python_path }}
