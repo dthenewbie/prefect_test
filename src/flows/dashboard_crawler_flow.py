@@ -16,8 +16,9 @@ from prefect.blocks.notifications import SlackWebhook
 @task
 def scrape_website(scroll_round:int) -> list:
     slack_webhook_block = SlackWebhook.load("flowcheck")
+    service_url = "https://standalone-chrome-service-175804660668.asia-east1.run.app"
     url = "https://165dashboard.tw/city-case-summary"  # 目標網址
-    driver = setup_driver()
+    driver = setup_driver(service_url)
     driver.get(url)
 
     all_data = []
@@ -100,7 +101,6 @@ def scrape_content(driver, area, scroll_round:int) -> list:
                     'Area': area,  # 新增地區欄位
                     'Status': 0
                 })
-                
                 # 標記為已處理
                 seen_uuid.add(uuid_str)
             except Exception as e:
@@ -112,7 +112,7 @@ def scrape_content(driver, area, scroll_round:int) -> list:
             print(f"-------processed data: {last_card_count}-------")
         # 滾動到頁面底部加載更多內容
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(3)  # 等待加載
+        time.sleep(5)  # 等待加載
         
         # 檢查是否有新內容
         retries = 3 #檢查次數
@@ -146,7 +146,7 @@ def dashboard_scraper_pipeline(scroll_round: int = 20):
         scraped_data = scrape_website(scroll_round)
         result_formated = data_transformation(scraped_data)
         save_to_caseprocessing(result_formated, "165dashboard_crawler")
-        slack_webhook_block.notify(f"| SUCCESS | flow 【165dashboard_crawler】 success.")
+        slack_webhook_block.notify(f"| INFO    | flow 【165dashboard_crawler】 finished.")
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【165dashboard_crawler】 error: {e}")
         # print(f"| ERROR   | flow 【165dashboard_crawler】 error: {e}")
@@ -177,5 +177,5 @@ if __name__ == "__main__":
         work_pool_name="antifraud",
         job_variables=dict(pull_policy="Never"),
         parameters=dict(scroll_round=int(20)),
-        cron="0 13 * * *"
+        cron="0 10 * * *"
     )
