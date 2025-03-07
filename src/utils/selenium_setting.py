@@ -4,9 +4,9 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-def setup_driver(service_url: str ="http://104.199.228.45:14444/wd/hub"):
+def setup_driver(service_url: str ="https://standalone-chrome-service-175804660668.asia-east1.run.app"):
     """設定 Selenium 瀏覽器參數。"""
-    # display = Display(visible=0, size=(1920, 1080)) 
+    # display = Display(visible=0, size=(1920, 1080))
     # display.start()
     ua = UserAgent()
     userAgent = ua.chrome
@@ -27,4 +27,5 @@ def setup_driver(service_url: str ="http://104.199.228.45:14444/wd/hub"):
         command_executor=service_url,
         options=chrome_options,
     )
+    driver.set_page_load_timeout(10)
     return driver

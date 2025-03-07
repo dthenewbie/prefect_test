@@ -31,10 +31,10 @@ def fetch_article_content(url) -> dict:
         paragraphs = inner_text.find_all('p')
         content_text = " ".join(p.text for p in paragraphs)
         uuid_str = str(uuid.uuid3(uuid.NAMESPACE_DNS, content_text))
-        article = {"ID":uuid_str, 
-                "Title": title, 
-                "Reported_Date": date.split(" ")[0], 
-                "Content": content_text, 
+        article = {"ID":uuid_str,
+                "Title": title,
+                "Reported_Date": date.split(" ")[0],
+                "Content": content_text,
                 "Url": url,
                 "Area":None}
     except Exception as e:
@@ -81,7 +81,7 @@ def CNA_news_scraper_pipeline():
 
 if __name__ == "__main__":
     # Instantiate the flow
-    
+
     # CNA_news_scraper_pipeline()
 
     # temporary local server of worker
@@ -95,15 +95,13 @@ if __name__ == "__main__":
     #     cron="*/5 * * * *",
     # )
     from prefect_github import GitHubRepository
-    
+
     CNA_news_scraper_pipeline.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/CNA_contents_crawler_flow.py:CNA_news_scraper_pipeline",
     ).deploy(
         name="CNA_Contents_Crawler_deployment",
         tags=["web crawler", "CNA", "case processing"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
-        # parameters=dict(name="Marvin"),
+        work_pool_name="antifrauddocker",
         cron="0 12 * * *"
     )

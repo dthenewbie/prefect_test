@@ -21,10 +21,10 @@ def getPageContent(soup) -> dict:
         uuid_str = str(uuid.uuid3(uuid.NAMESPACE_DNS, content_text))
         # Created_time = str(datetime.now())
         data = {
-            "ID": uuid_str, 
-            "Title": Title, 
+            "ID": uuid_str,
+            "Title": Title,
             "Reported_Date": Date,
-            "Content": content_text, 
+            "Content": content_text,
             "Area": None,
             "Status": 0}
         print(data)
@@ -41,9 +41,9 @@ def Scrape_page():
     try:
         current_page = url
         # while True:
-        for _ in range(2): 
+        for _ in range(2):
             Url_list = soup.select("body > main > section.list > ul > li > a")
-            for url_ele in Url_list[:5]: 
+            for url_ele in Url_list[:5]:
                 try:
                     url_tail = url_ele["href"]
                     url = base_url + url_tail
@@ -68,7 +68,7 @@ def Scrape_page():
             print(f"entering next page: {next_page}")
     except Exception as e:
         print(e)
-    
+
     return result
 
 @task
@@ -91,10 +91,10 @@ def New_Taipei_Police_Department_scraper_pipeline():
     except Exception as e:
         slack_webhook_block.notify(f"| ERROR   | flow 【New_Taipei_Police_Department_crawler】 failed: {e}")
         print(f"| ERROR   | flow 【New_Taipei_Police_Department_crawler】 failed: {e}")
-        
+
 if __name__ == "__main__":
     # Instantiate the flow
-    
+
     # New_Taipei_Police_Department_scraper_pipeline()
 
     # # temporary local server of worker
@@ -109,15 +109,13 @@ if __name__ == "__main__":
     # )
 
     from prefect_github import GitHubRepository
-    
+
     New_Taipei_Police_Department_scraper_pipeline.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/ntpd_crawler_flow.py:New_Taipei_Police_Department_scraper_pipeline",
     ).deploy(
         name="New_Taipei_Police_Department_crawler_deployment",
         tags=["web crawler", "New_Taipei_Police_Department", "case processing"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
-        # parameters=dict(name="Marvin"),
+        work_pool_name="antifrauddocker",
         cron="0 11 * * 3"
     )

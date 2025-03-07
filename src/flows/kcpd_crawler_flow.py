@@ -26,10 +26,10 @@ def getPageContent(soup) -> dict:
         uuid_str = str(uuid.uuid3(uuid.NAMESPACE_DNS, content_text))
         # Created_time = str(datetime.now())
         data = {
-            "ID": uuid_str, 
-            "Title": Title, 
+            "ID": uuid_str,
+            "Title": Title,
             "Reported_Date": Date,
-            "Content": content_text, 
+            "Content": content_text,
             "Area": None,
             "Status": 0}
     except:
@@ -58,7 +58,7 @@ def Scrape_page():
                 print("url is invailid")
     except Exception as e:
         print(e)
-    
+
     return result
 def convert_date(text):
     """
@@ -95,7 +95,7 @@ def Kaohsiung_Police_Department_scraper_pipeline():
 
 if __name__ == "__main__":
     #Instantiate the flow
-    
+
     # Kaohsiung_Police_Department_scraper_pipeline()
 
 
@@ -112,13 +112,11 @@ if __name__ == "__main__":
 
     from prefect_github import GitHubRepository
     Kaohsiung_Police_Department_scraper_pipeline.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/kcpd_crawler_flow.py:Kaohsiung_Police_Department_scraper_pipeline",
     ).deploy(
         name="Kaohsiung_Police_Department_crawler_deployment",
         tags=["web crawler", "Kaohsiung_Police_Department", "case processing"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
-        # parameters=dict(name="Marvin"),
+        work_pool_name="antifrauddocker",
         cron="0 9 * * 3"
     )

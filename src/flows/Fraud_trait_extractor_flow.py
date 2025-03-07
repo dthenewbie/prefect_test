@@ -19,10 +19,10 @@ from langchain_community.callbacks import get_openai_callback
 # ----- GCP Secret Manager ----- #
 # Function call to get api key
 @task
-def access_secret_version(project_id='gcppytest-447615', 
-                          secret_id='open_api_key_mine', 
+def access_secret_version(project_id='gcppytest-447615',
+                          secret_id='open_api_key_mine',
                           version_id='1') ->str:
-    
+
     """
     Access the payload for the given secret version if one exists. The version
     can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
@@ -48,7 +48,7 @@ def access_secret_version(project_id='gcppytest-447615',
         slack_webhook_block.notify(f"| ERROR   | task 【access_secret_version】 failed: {e}")
         return None
 
-    
+
 
 
 # ----- 日誌設定 ----- #
@@ -102,86 +102,86 @@ class FraudContentExtractor:
             Provide the extracted information strictly in JSON format without any comments or additional text.
             Do not include explanations, footnotes, or Markdown formatting. Return only valid JSON.
 
-            1. **Area (受害者區域)**: *type: string or None*  
-            Extract the victim's residential area mentioned in the article.  
-            The area must be one of Taiwan's administrative divisions (直轄縣、市) from the following list:  
-            臺北市、新北市、桃園市、臺中市、臺南市、高雄市、新竹縣、苗栗縣、彰化縣、南投縣、雲林縣、嘉義縣、屏東縣、宜蘭縣、花蓮縣、臺東縣、澎湖縣、金門縣、連江縣、基隆市、新竹市、嘉義市。  
+            1. **Area (受害者區域)**: *type: string or None*
+            Extract the victim's residential area mentioned in the article.
+            The area must be one of Taiwan's administrative divisions (直轄縣、市) from the following list:
+            臺北市、新北市、桃園市、臺中市、臺南市、高雄市、新竹縣、苗栗縣、彰化縣、南投縣、雲林縣、嘉義縣、屏東縣、宜蘭縣、花蓮縣、臺東縣、澎湖縣、金門縣、連江縣、基隆市、新竹市、嘉義市。
             - If the text mentions a **district (區) or township (鄉、鎮、市)**, map it to the correct **直轄縣市**.
             - Example: **"板橋區"** → **"新北市"**
             - Example: **"中壢區"** → **"桃園市"**
-            - If the **specific county or city cannot be determined**, return the **country name** (e.g., `"臺灣"`, `"日本"`, `"韓國"`).  
+            - If the **specific county or city cannot be determined**, return the **country name** (e.g., `"臺灣"`, `"日本"`, `"韓國"`).
             - If no location information is available, return **None** (not `"None"` or `""`).
 
-            2. **Platform (詐騙管道)**: *type: string or None*  
-            Identify the platform through which the victim contacted the fraudster.  
-            Choose from the following options: 電話, 通訊軟體, 社群軟體, 交友軟體, 遊戲軟體, 連結.  
+            2. **Platform (詐騙管道)**: *type: string or None*
+            Identify the platform through which the victim contacted the fraudster.
+            Choose from the following options: 電話, 通訊軟體, 社群軟體, 交友軟體, 遊戲軟體, 連結.
             If the information is not available, return **None(not "None" or "")**.
 
-            3. **Victim_Gender (受害者性別)**: *type: string or None*  
-            Identify the victim's gender. Use "M" for male and "F" for female.  
+            3. **Victim_Gender (受害者性別)**: *type: string or None*
+            Identify the victim's gender. Use "M" for male and "F" for female.
             If the information is not available, return **None(not "None" or "")**.
 
-            4. **Victim_Age (受害者年齡)**: *type: int or None*  
-            Extract the victim's age from the article.  
+            4. **Victim_Age (受害者年齡)**: *type: int or None*
+            Extract the victim's age from the article.
             If the information is not available, return **None(not "None" or "")**.
 
-            5. **Victim_Career (受害者職業)**: *type: string or None*  
-            Classify the victim's occupation into one of the following categories:  
-            - 學生  
-            - 工程師  
-            - 業務/銷售  
-            - 服務業  
-            - 金融從業人員  
-            - 公務員  
-            - 自營商/創業者  
-            - 家庭主婦/主夫  
-            - 退休人士  
-            - 無業/待業中  
-            - 技術人員  
-            - 醫療人員  
-            - 藝術/娛樂業  
-            - 其他  
+            5. **Victim_Career (受害者職業)**: *type: string or None*
+            Classify the victim's occupation into one of the following categories:
+            - 學生
+            - 工程師
+            - 業務/銷售
+            - 服務業
+            - 金融從業人員
+            - 公務員
+            - 自營商/創業者
+            - 家庭主婦/主夫
+            - 退休人士
+            - 無業/待業中
+            - 技術人員
+            - 醫療人員
+            - 藝術/娛樂業
+            - 其他
             If the information is not available, return **None(not "None" or "")**.
 
-            6. **Financial_Loss (被詐騙金額)**: *type: int or None*  
-            Extract the total financial loss suffered by the victim.  
-            Return the value as an integer without commas.  
+            6. **Financial_Loss (被詐騙金額)**: *type: int or None*
+            Extract the total financial loss suffered by the victim.
+            Return the value as an integer without commas.
             If the information is not available, return **None(not "None" or "")**.
 
-            7. **Fraud_type (詐騙類型)**: *type: list or None*  
-            Identify the type(s) of fraud involved in the case.  
-            Return the corresponding **ID number(s)** based on the following mapping:  
-            - 1: 假投資  
-            - 2: 假交友  
-            - 3: 網購  
-            - 4: 遊戲  
-            - 5: 釣魚簡訊  
-            - 6: 假求職  
-            - 7: 假檢警  
-            - 8: 假中獎  
-            - 9: 假冒身分  
-            - 10: 宗教詐騙  
-            - 11: 色情應召  
-            - 12: 假貸款  
-            - 13: 假推銷  
+            7. **Fraud_type (詐騙類型)**: *type: list or None*
+            Identify the type(s) of fraud involved in the case.
+            Return the corresponding **ID number(s)** based on the following mapping:
+            - 1: 假投資
+            - 2: 假交友
+            - 3: 網購
+            - 4: 遊戲
+            - 5: 釣魚簡訊
+            - 6: 假求職
+            - 7: 假檢警
+            - 8: 假中獎
+            - 9: 假冒身分
+            - 10: 宗教詐騙
+            - 11: 色情應召
+            - 12: 假貸款
+            - 13: 假推銷
             - 14: 騙取金融帳戶
             - 15: 繳費詐騙
             It is possible for an article to involve multiple fraud types, like [1, 2].
             **If it is related to fraud, Please return list with at least one most relevant Fraud_type_ID like [1].**
-            If it is not related to fraud, return **empty list []**. 
+            If it is not related to fraud, return **empty list []**.
             Do not return **None "None" or ""** or something else.
 
-            8. **Is_Fraud (是否為詐騙文章)**: *type: int (1 or 0)*  
-            Determine whether the article is related to fraud.  
+            8. **Is_Fraud (是否為詐騙文章)**: *type: int (1 or 0)*
+            Determine whether the article is related to fraud.
             Return 1 if it is fraud-related, or 0 if it is not.
             You must identify whether the article is related to fraud or not. Do not return **None "None" or ""**.
             ### ⚠️**If the result of Fraud_type is [], there's no way the article is related to fraud, so return 0.** this is a must. Stictly follow this rule.
             ---
 
-            ### ⚠️ **Important Guidelines:**  
-            - All extracted content must be in **Traditional Chinese (繁體中文)**, except for **Fraud_type**, which should return numeric IDs.  
-            - The output must be in **strict JSON format** without any additional text.  
-            - **Do NOT** add, remove, or modify the specified fields.  
+            ### ⚠️ **Important Guidelines:**
+            - All extracted content must be in **Traditional Chinese (繁體中文)**, except for **Fraud_type**, which should return numeric IDs.
+            - The output must be in **strict JSON format** without any additional text.
+            - **Do NOT** add, remove, or modify the specified fields.
             - If any feature is unavailable, **return None (not "None" or "")** in JSON.
 
             ---
@@ -280,7 +280,7 @@ class MySQLHandler:
         批量寫入 Fraud_case 資料表。
         """
         insert_query = """
-            INSERT INTO Fraud_case (Case_ID, Title, Reported_Date, Area, Platform, Victim_Gender, 
+            INSERT INTO Fraud_case (Case_ID, Title, Reported_Date, Area, Platform, Victim_Gender,
                                     Victim_Age, Victim_Career, Financial_Loss, Content, Url)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
@@ -309,7 +309,7 @@ class MySQLHandler:
                     print(f"Error inserting fraud classifications for case {case_id}: {e}")
                     # logging.error(f"Error inserting fraud classifications for case {case_id}: {e}")
         return success_cases
-    
+
     def batch_update_non_fraud_cases(self, updates):
         """
         更新非詐騙文章的 Case_processing 表中的 Status 欄位和 Is_Fraud 欄位。
@@ -331,9 +331,9 @@ class MySQLHandler:
         """
         success_inputs = []
         update_query = """
-                        UPDATE Case_processing 
-                        SET Status = 1, 
-                            Is_Fraud = %s 
+                        UPDATE Case_processing
+                        SET Status = 1,
+                            Is_Fraud = %s
                         WHERE ID = %s
                         """
         for update in updates:
@@ -369,13 +369,13 @@ class MySQLHandler:
 
 
 
-            
+
 @task
 def Extract_from_Fraud_case():
     db = MySQLHandler(host='35.201.141.125',
-                    port=3306, 
-                    user='root', 
-                    password='my-secret-pw', 
+                    port=3306,
+                    user='root',
+                    password='my-secret-pw',
                     database='Anti_Fraud')
     cases = db.fetch_unprocessed_cases()[:20] # 取前20筆
     print(f"Fetched {len(cases)} unprocessed cases.")
@@ -432,7 +432,7 @@ def openai_trait_extractor(cases: tuple, open_api_key: str):
                 # Status = 1, Is_Fraud = 1
                 case_updates.append((1, case_id))
         except Exception as e:
-            print(f"skipping case {case_id} due to error: {e}") 
+            print(f"skipping case {case_id} due to error: {e}")
             # logging.error(f"skipping case {case_id} due to error: {e}")
     return transformed_data, fraud_classifications, case_updates, non_fraud_cases
 @task
@@ -442,9 +442,9 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
         return slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 No data to process.")
     try:
         db = MySQLHandler(host='35.201.141.125',
-                        port=3306, 
-                        user='root', 
-                        password='my-secret-pw', 
+                        port=3306,
+                        user='root',
+                        password='my-secret-pw',
                         database='Anti_Fraud')
         non_fraud_success_update = db.batch_update_non_fraud_cases(non_fraud_cases)
         valid_case_ids = db.batch_insert_fraud_cases(transformed_data)
@@ -452,7 +452,7 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
         fraud_success_inputs = db.batch_update_case_processing(case_updates, valid_classification_ids)
         db.commit()
         print(f"fraud:{fraud_success_inputs}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
-        
+
         # slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
         # logging.info(f"fraud:{success_inputs}/non_fraud:{len(non_fraud_cases)} data processed and committed successfully.")
 
@@ -460,11 +460,11 @@ def load_to_Anti_Fraud(transformed_data, fraud_classifications, case_updates, no
         slack_webhook_block.notify(f"| CRITICAL| flow 【trait_extractor】 ETL process failed: {e}")
         print(f"ETL process failed: {e}")
         # logging.critical(f"ETL process failed: {e}")
-                
+
     finally:
         db.close()
         return fraud_success_inputs, non_fraud_success_update
-    
+
 @flow(name = "trait_extractor")
 def trait_extractor_flow(rounds: int = 100):
     slack_webhook_block = SlackWebhook.load("flowcheck")
@@ -478,9 +478,9 @@ def trait_extractor_flow(rounds: int = 100):
                 print("No unprocessed cases found.")
                 break
             transformed_data, fraud_classifications, case_updates, non_fraud_cases = openai_trait_extractor(cases,open_api_key)
-            fraud_count, non_fraud_count = load_to_Anti_Fraud(transformed_data, 
-                                                              fraud_classifications, 
-                                                              case_updates, 
+            fraud_count, non_fraud_count = load_to_Anti_Fraud(transformed_data,
+                                                              fraud_classifications,
+                                                              case_updates,
                                                               non_fraud_cases)
             fraud_success_input += fraud_count
             non_fraud_success_update += non_fraud_count
@@ -492,7 +492,7 @@ def trait_extractor_flow(rounds: int = 100):
     slack_webhook_block.notify(f"| INFO    | flow 【trait_extractor】 fraud:{fraud_success_input}/non_fraud:{non_fraud_success_update} data processed and committed successfully.")
 
 if __name__ == "__main__":
-    
+
     # trait_extractor_flow()
 
     # # temporary local server of worker
@@ -508,13 +508,12 @@ if __name__ == "__main__":
     from prefect_github import GitHubRepository
 
     trait_extractor_flow.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/Fraud_trait_extractor_flow.py:trait_extractor_flow",
     ).deploy(
         name="Fraud_case_trait_extractor",
         tags=["extractor", "Fraud_case", "Fraud_classification"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        work_pool_name="antifrauddocker",
         parameters=dict(rounds= int(100)),
         cron="0 20 * * *"
     )

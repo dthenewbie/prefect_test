@@ -11,7 +11,7 @@ def fetch_api_data(url) -> list[dict]:
         response = requests.get(headers=headers, url=url)
         response.raise_for_status()  # 檢查 HTTP 回應是否有錯誤
         data = response.json()
-        
+
         if data.get("success"):
             records = data.get("result", {}).get("records", [])
             return records
@@ -54,7 +54,7 @@ def Fraud_Weburl_api():
 if __name__ == "__main__":
 
     # Fraud_Weburl_api()
-    
+
     # # temporary local server of worker
     # Fraud_Weburl_api.serve(
     #     name="Fraud_Weburl_api",  # Deployment name. It create a temporary deployment.
@@ -69,13 +69,11 @@ if __name__ == "__main__":
     from prefect_github import GitHubRepository
 
     Fraud_Weburl_api.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/Fraud_weburl_api_flow.py:Fraud_Weburl_api",
     ).deploy(
         name="Fraud_Weburl_api",
         tags=["API", "Open Data", "Fraud_Weburl"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
-        # parameters=dict(name="Marvin"),
+        work_pool_name="antifrauddocker",
         cron="0 18 * * *"
     )

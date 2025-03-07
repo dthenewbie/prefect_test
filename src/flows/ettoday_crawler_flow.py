@@ -24,7 +24,7 @@ def scrape_website(pages: int =20) -> list:
         processed_data = set()
         # pages = 100
         pages = 20 # 測試限制 1 頁(記得修改)
-        for page in range(1, pages+1):  
+        for page in range(1, pages+1):
             url = f"{url_base}{page}"
             print(f"Scraping page {page}: {url}")
             try:
@@ -62,7 +62,7 @@ def scrape_page(soup):
                 uuid_str = str(uuid.uuid3(uuid.NAMESPACE_DNS, content_text))
             # 處理進入各篇新聞一覽頁面連結時，爬取內容出現錯誤，重新嘗試
             except Exception as e:
-                if round == retries + 1:    
+                if round == retries + 1:
                     print(f"Error fetching content: {e}")
                     content_text = None
                     uuid_str = None
@@ -105,7 +105,7 @@ def ETtoday_news_scraper_pipeline(pages: int =20):
 if __name__ == "__main__":
 
     # ETtoday_news_scraper_pipeline()
-    
+
     # # temporary local server of worker
     # ETtoday_news_scraper_pipeline.serve(
     #     name="ETtoday_crawler_deployment_test",  # Deployment name. It create a temporary deployment.
@@ -118,15 +118,14 @@ if __name__ == "__main__":
     # )
 
     from prefect_github import GitHubRepository
-    
+
     ETtoday_news_scraper_pipeline.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/ettoday_crawler_flow.py:ETtoday_news_scraper_pipeline",
     ).deploy(
         name="ETtoday_crawler_deployment",
         tags=["web crawler", "ETtoday", "case processing"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        work_pool_name="antifrauddocker",
         parameters=dict(pages=int(20)),
         cron="0 14 * * *"
     )

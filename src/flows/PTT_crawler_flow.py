@@ -7,6 +7,7 @@ import re
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
@@ -20,12 +21,21 @@ def get_soup(driver, url):
     """
     取得網頁內容並於遇到成年問題時點擊確認
     """
-    driver.get(url)
-    if "over18" in driver.current_url:
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "yes"))).click()
-    time.sleep(1)  # 等待頁面加載
-    page_source = driver.page_source
-    return BeautifulSoup(page_source, "html.parser")
+    soup = None
+    for attempt in range(3):
+        try:
+            driver.get(url)
+            if "over18" in driver.current_url:
+                WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "yes"))).click()
+            time.sleep(1)  # 等待頁面加載
+            page_source = driver.page_source
+            soup = BeautifulSoup(page_source, "html.parser")
+            break
+        except TimeoutException:
+            print(f"Timeout occurred for URL: {url}. Retrying... (Attempt {attempt + 1}/3)")
+        except Exception as e:
+            print(f"Error occurred for URL: {url}. Error: {e}. Retrying... (Attempt {attempt + 1}/3)")
+    return soup
 
 def get_article_links(soup) -> list:
     """
@@ -59,7 +69,7 @@ def get_article_content(base_url, article_url) -> dict:
         "Title": title,
         "author": author,
         "Reported_Date": date,
-        "Content": content, 
+        "Content": content,
         "Url": f"{base_url}{article_url}",
         "Area": None}
 @task
@@ -85,11 +95,11 @@ def get_data_list(pagenum: int = 20):
                         print(f"已爬取: {article_content['Title']}")
                 except Exception as e:
                     print(f"Error fetching article {link}: {e}")
-            
+
             # 找到上一頁的連結
             paging = soup.select("div.btn-group.btn-group-paging a")
             prev_page_link = paging[1]["href"] if len(paging) > 1 else None
-            
+
             if prev_page_link and "index" in prev_page_link:
                 current_url = f"{base_url}{prev_page_link}"
             else:
@@ -131,7 +141,7 @@ def PTT_scraper_pipeline(pagenum: int = 20):
 
 if __name__ == "__main__":
     # # Instantiate the flow
-    
+
     # PTT_scraper_pipeline()
 
     # # temporary local server of worker
@@ -145,13 +155,12 @@ if __name__ == "__main__":
 
     from prefect_github import GitHubRepository
     PTT_scraper_pipeline.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/PTT_crawler_flow.py:PTT_scraper_pipeline",
     ).deploy(
         name="PTT_crawler_deployment",
         tags=["web crawler", "PTT", "case processing"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        work_pool_name="antifrauddocker",
         parameters=dict(pagenum = int(20)),
         cron="0 8 * * *"
     )

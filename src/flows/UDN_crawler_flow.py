@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from prefect import flow, task
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import NoSuchElementException
@@ -16,22 +17,19 @@ from utils.selenium_setting import setup_driver
 from prefect.blocks.notifications import SlackWebhook
 
 
-def scrape_news_details(detail_url, retries=3) -> str:
+def scrape_news_details(detail_url) -> str:
     """進入新聞詳細頁，帶重試機制爬取內文內容。"""
-    for attempt in range(retries):
-        try:
-            response = request_with_retry(detail_url)
-            soup = BeautifulSoup(response.text, "html.parser")
-            paragraphs = soup.select("div.article-content__paragraph p")
-            if not paragraphs:
-                raise ValueError("No content found on the page.")
+    try:
+        response = request_with_retry(detail_url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        paragraphs = soup.select("div.article-content__paragraph p")
+        if not paragraphs:
+            raise ValueError("No content found on the page.")
 
-            content = "\n".join([p.text for p in paragraphs[:-2]])
-            break
-        except Exception as e:
-            print(f"Error while scraping {detail_url}: {e}")
-            print(f"Retrying {detail_url} (Attempt {attempt + 1}/{retries})")
-            content = f"Error: {str(e)}"
+        content = "\n".join([p.text for p in paragraphs[:-2]])
+    except Exception as e:
+        print(f"Error while scraping {detail_url}: {e}")
+        content = f"Error: {str(e)}"
     return content
 
 @task()
@@ -39,13 +37,21 @@ def scrape_main_page(scroll_round: int = 20):
     """爬取主頁內容，並進一步進入每個新聞的詳細頁。"""
     url = "https://udn.com/search/tagging/2/%E8%A9%90%E9%A8%99%E9%9B%86%E5%9C%98"
     driver = setup_driver()
-    driver.get(url)
+
 
     processed_urls = set()
     all_results = []
     error_log = []
 
     try:
+        for attempt in range(3):
+            try:
+                driver.get(url)
+                break
+            except TimeoutException:
+                print(f"Timeout occurred for URL: {url}. Retrying... (Attempt {attempt + 1}/3)")
+            except Exception as e:
+                print(f"Error occurred for URL: {url}. Error: {e}. Retrying... (Attempt {attempt + 1}/3)")
         # while True:
         for _ in range(scroll_round): # ----------下拉次數------------(外部參數)
             news_blocks = driver.find_elements(By.CSS_SELECTOR, "div.story-list__news")
@@ -87,7 +93,7 @@ def scrape_main_page(scroll_round: int = 20):
                         print(f"Scraped: {title} ({date})")
                 except NoSuchElementException:
                     continue
-                except Exception as e: 
+                except Exception as e:
                     print(f"Error while processing news block: {e}")
 
             # 模擬滾動加載新內容
@@ -127,7 +133,7 @@ def UDN_news_scraper_pipeline(scroll_round: int = 20):
 
 if __name__ == "__main__":
     # # Instantiate the flow
-    
+
     # UDN_news_scraper_pipeline()
 
     # # temporary local server of worker
@@ -143,13 +149,12 @@ if __name__ == "__main__":
 
     from prefect_github import GitHubRepository
     UDN_news_scraper_pipeline.from_source(
-    source=GitHubRepository.load("antifraud"),
+    source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/UDN_crawler_flow.py:UDN_news_scraper_pipeline",
     ).deploy(
         name="UDN_news_crawler_deployment",
         tags=["web crawler", "UDN", "case processing"],
-        work_pool_name="antifraud",
-        job_variables=dict(pull_policy="Never"),
+        work_pool_name="antifrauddocker",
         parameters=dict(scroll_round= int(20)),
         cron="0 15 * * *"
     )
