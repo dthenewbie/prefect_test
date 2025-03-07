@@ -35,7 +35,7 @@ def save_to_Fraud_Line_ID():
     with conn.cursor() as cursor:
         for record in records:
             try:
-                cursor.execute(sql, (record['帳號'], record['通報日期']))
+                cursor.execute(sql, (record['帳號'].strip(), record['通報日期']))
                 success_count += 1
             except Exception as e:
                 continue

@@ -26,8 +26,6 @@ def save_to_caseprocessing(data: list, flow_name: str) -> None:
         with conn.cursor() as cursor:
             for record in data:
                 try:
-                    # 錯誤計次歸0
-                    error_count = 0
                     sql = """
                     INSERT INTO Case_processing
                     (ID, Title, Reported_Date, Content, Url, Area) 
@@ -42,6 +40,8 @@ def save_to_caseprocessing(data: list, flow_name: str) -> None:
                         record['Area']
                     ))
                     insert_success_count += 1
+                    # 錯誤計次歸0
+                    error_count = 0
                 except pymysql.IntegrityError as e:
                     if e.args[0] == 1062:
                         # print("Record already exists in the table.")

@@ -83,7 +83,7 @@ def data_transformation(result) -> list:
 @flow(name = "Taoyuan_Police_Department_crawler")
 def Taoyuan_Police_Department_scraper_pipeline():
     slack_webhook_block = SlackWebhook.load("flowcheck")
-    try:    
+    try:
         # Task dependencies
         result = page_iter()
         result_formated = data_transformation(result)
