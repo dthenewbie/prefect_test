@@ -511,7 +511,7 @@ if __name__ == "__main__":
     source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/Fraud_trait_extractor_flow.py:trait_extractor_flow",
     ).deploy(
-        name="Fraud_case_trait_extractor",
+        name="Fraud_case_trait_extractor_docker",
         tags=["extractor", "Fraud_case", "Fraud_classification"],
         work_pool_name="antifrauddocker",
         parameters=dict(rounds= int(100)),

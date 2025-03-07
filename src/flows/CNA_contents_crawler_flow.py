@@ -100,7 +100,7 @@ if __name__ == "__main__":
     source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/CNA_contents_crawler_flow.py:CNA_news_scraper_pipeline",
     ).deploy(
-        name="CNA_Contents_Crawler_deployment",
+        name="CNA_Contents_Crawler_deployment_docker",
         tags=["web crawler", "CNA", "case processing"],
         work_pool_name="antifrauddocker",
         cron="0 12 * * *"

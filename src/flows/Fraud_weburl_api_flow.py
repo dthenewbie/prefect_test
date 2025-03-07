@@ -72,7 +72,7 @@ if __name__ == "__main__":
     source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/Fraud_weburl_api_flow.py:Fraud_Weburl_api",
     ).deploy(
-        name="Fraud_Weburl_api",
+        name="Fraud_Weburl_api_docker",
         tags=["API", "Open Data", "Fraud_Weburl"],
         work_pool_name="antifrauddocker",
         cron="0 18 * * *"

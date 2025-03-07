@@ -152,7 +152,7 @@ if __name__ == "__main__":
     source=GitHubRepository.load("antifrauddocker"),
     entrypoint="src/flows/UDN_crawler_flow.py:UDN_news_scraper_pipeline",
     ).deploy(
-        name="UDN_news_crawler_deployment",
+        name="UDN_news_crawler_deployment_docker",
         tags=["web crawler", "UDN", "case processing"],
         work_pool_name="antifrauddocker",
         parameters=dict(scroll_round= int(20)),
